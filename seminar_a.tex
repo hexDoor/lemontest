@@ -1,0 +1,129 @@
+\documentclass[xcolor]{beamer}
+
+\usepackage[T1]{fontenc}
+
+\usetheme{Malmoe}
+\useoutertheme{infolines}
+\useinnertheme{circles}
+
+\makeatletter
+\setbeamertemplate{headline}{%
+	\begin{beamercolorbox}[ht=2.25ex,dp=3.75ex]{section in head/foot}
+		\insertnavigation{\paperwidth}
+	\end{beamercolorbox}%
+}%
+\makeatother
+
+% Colours defined here
+\definecolor{DarkGreen}{HTML}{41964b}
+\definecolor{LightGreen}{HTML}{46c755}
+\definecolor{FG}{HTML}{ebebeb}
+\definecolor{BG2}{HTML}{233628}
+\definecolor{BG}{HTML}{202622}
+
+\setbeamercolor{palette primary}{bg=BG, fg=FG}
+\setbeamercolor{palette secondary}{bg=BG, fg=FG}
+\setbeamercolor{palette tertiary}{bg=BG, fg=FG}
+\setbeamercolor{palette quaternary}{bg=BG, fg=FG}
+
+\setbeamercolor{section in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{subsection in head/foot}{bg=BG2, fg=LightGreen}
+\setbeamercolor{page number in head/foot}{bg=BG2, fg=LightGreen}
+\setbeamercolor{author in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{date in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{title in head/foot}{bg=BG2, fg=LightGreen}
+
+\setbeamercolor{normal text}{fg=FG, bg=BG}
+\setbeamercolor{structure}{fg=LightGreen, bg=BG}
+
+\setbeamerfont{subsection in toc}{size=\scriptsize}
+\setbeamerfont{section in toc}{size=\footnotesize}
+
+\usefonttheme{serif}
+
+\usepackage{unicode-math}
+\setmainfont{Gentium Basic} % Main font
+\setmonofont{Fantasque Sans Mono} % Code font
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{microtype}
+
+\usepackage{listings}
+\lstset{%
+	language=C,
+	frame=single,
+	backgroundcolor=\color{BG2},
+	basicstyle={\tiny\ttfamily\color{FG}},
+	keywordstyle=\color{LightGreen}
+}
+
+\usepackage{graphicx}
+\graphicspath{{files/}}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+
+\usepackage{cancel}
+
+\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor\\Assessed by John Shephard}
+\title[Thesis A Seminar]{A Testing Tool for Introductory Programming Courses}
+\subtitle{Thesis A Seminar}
+\date{Term 1, 2022}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\AtBeginSection[]{
+	\begin{frame}
+		\frametitle{Contents}
+
+		\centering
+		\begin{columns}
+			\begin{column}{0.75\textwidth}
+				\tableofcontents[currentsection]
+			\end{column}
+			\begin{column}{0.15\textwidth}
+				% Use this for anything you want to display alongside the contents
+			\end{column}
+		\end{columns}
+	\end{frame}
+}
+
+\section{Introduction}
+\subsection{Motivation - Student Enrolments in Introductory Courses}
+\begin{frame}
+	\frametitle{Student Enrolments in Introductory Courses}
+	Student numbers enrolling in introductory programming courses at UNSW have significantly increased in recent years.\\
+	\begin{center}
+		\begin{tabular}{|c|c|c|c|c|c|}
+			\hline
+			Enrolments/Year & 2017 & 2018 & 2019 & 2020 & 2021 \\ 
+			\hline
+			COMP1511 & C & E & C & E & C\\ 
+			\hline
+			COMP1521 & D & F & C & E & C\\
+			\hline
+			COMP2521 & D & F & C & E & C\\
+			\hline
+		\end{tabular}
+	\end{center}
+	The trend in increasing student enrolments for these courses present two main challenges for course staff:\\
+	
+	\begin{enumerate}
+		\item How can courses feasibly start/continue utilising practical assessments without automation tools as the staff to student ratio decreases?
+		\item How much of the marking process can be automated via tools and will the automation tools remain viable as assessments change?
+	\end{enumerate}
+	
+\end{frame}
+
+\subsection{Motivation - Andrew Taylor Autotest}
+\begin{frame}
+	\frametitle{Andrew Taylor Autotest}
+	
+	Blah blah blah
+\end{frame}
+\end{document}
