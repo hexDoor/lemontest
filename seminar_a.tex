@@ -13,6 +13,7 @@
 	\end{beamercolorbox}%
 }%
 \makeatother
+\setbeamertemplate{caption}[numbered]
 
 % Colours defined here
 \definecolor{DarkGreen}{HTML}{41964b}
@@ -66,7 +67,7 @@
 
 \usepackage{cancel}
 
-\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor\\Assessed by John Shephard}
+\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor (UNSW)\\Assessed by John Shephard (UNSW)}
 \title[Thesis A Seminar]{A Testing Tool for Introductory Programming Courses}
 \subtitle{Thesis A Seminar}
 \date{Term 1, 2022}
@@ -97,33 +98,425 @@
 \subsection{Motivation - Student Enrolments in Introductory Courses}
 \begin{frame}
 	\frametitle{Student Enrolments in Introductory Courses}
-	Student numbers enrolling in introductory programming courses at UNSW have significantly increased in recent years.\\
-	\begin{center}
-		\begin{tabular}{|c|c|c|c|c|c|}
+	Student numbers enrolling in introductory programming courses at UNSW have significantly increased in recent years\\
+		\pause
+	\begin{table}[h!]
+		\centering
+		\begin{tabular}{|l|c|c|c|c|c|}
 			\hline
-			Enrolments/Year & 2017 & 2018 & 2019 & 2020 & 2021 \\ 
+			\textbf{Enrolments/Year} & \textbf{2017} & \textbf{2018} & \textbf{2019} & \textbf{2020} & \textbf{2021} \\ 
 			\hline
-			COMP1511 & C & E & C & E & C\\ 
+			\textbf{COMP1511} & 1351 & 1655 & 1874 & 1905 & 2381\\ 
 			\hline
-			COMP1521 & D & F & C & E & C\\
+			\textbf{COMP1521} & 715 & 1136 & 1352 & 1417 & 1633\\
 			\hline
-			COMP2521 & D & F & C & E & C\\
+			\textbf{COMP2521} & 378 & 1019 & 1389 & 1445 & 1551\\
 			\hline
 		\end{tabular}
-	\end{center}
+		\caption{Course enrolments from UNSW Class Timetable (April 2022)}
+		\label{table:1}
+		\vspace{-4mm}
+	\end{table}
+		\pause
 	The trend in increasing student enrolments for these courses present two main challenges for course staff:\\
+		\pause
 	
 	\begin{enumerate}
 		\item How can courses feasibly start/continue utilising practical assessments without automation tools as the staff to student ratio decreases?
+			\pause
 		\item How much of the marking process can be automated via tools and will the automation tools remain viable as assessments change?
 	\end{enumerate}
 	
 \end{frame}
 
-\subsection{Motivation - Andrew Taylor Autotest}
+\subsection{Motivation - Andrew Taylor autotest}
 \begin{frame}
-	\frametitle{Andrew Taylor Autotest}
-	
-	Blah blah blah
+	\frametitle{Andrew Taylor autotest}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item Written by Andrew Taylor in 2015 (Python rewrite)
+			\pause
+		\item First introduced to UNSW in COMP2041 2015 S2
+			\pause
+		\item Sufficiently capable and in current use to perform automated marking for most UNSW introductory programming courses
+			\pause
+		\item Has some \textbf{design deficiencies} and accumulated non-trivial \textbf{technical debt} since introduction
+			\pause
+		\item Deeper exploration of architecture and implementation details in Background section of Seminar
+	\end{enumerate}
+\end{frame}
+
+\subsection{Motivation - Technical Debt}
+\begin{frame}
+	\frametitle{Technical Debt}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item We approach technical debt as outlined in the framework defined within \textit{An Exploration of Technical Debt}\footnote{Tom Edith, Aybüke Aurum and Richard Vidgen, ‘An Exploration of Technical Debt’ (2013) 86(6) \textit{The Journal of systems and software 1498}}
+			\pause
+		\item Cunningham\footnote{Cunningham, Ward, ‘The WyCash Portfolio Management System’ in \textit{Addendum to the Proceedings on Object-Oriented Programming Systems, Languages, and Applications (addendum)} (ACM, 1992) 29}, who introduced the concept of technical debt, described how \textit{“shipping first time code is like going into debt. A little debt speeds development so long as it is paid back promptly with a rewrite”}
+			\pause
+		\item How can we reconcile existing technical debt and ensure debt remains manageable in the future?
+	\end{enumerate}
+\end{frame}
+
+\subsection{Thesis Statement}
+\begin{frame}
+	\frametitle{Thesis Statement}
+	\textbf{A user-friendly and maintainable general code testing tool is important to streamline the administration of introductory programming courses}
+	\\~\\
+		\pause
+	We will:
+		\pause
+	\begin{enumerate}
+		\item Develop an extensible and easy to use software package which parses and runs pre-written tests on submitted code
+			\pause
+		\item Remediate known flaws in the existing autotest package
+			\pause
+		\item Maintain backwards compatibility with legacy tests written for the existing autotest package
+			\pause
+		\item Perform proving and performance tests on the new software package
+			\pause
+		\item Deprecate and replace the existing autotest used for introductory programming courses at UNSW CSE
+	\end{enumerate}
+\end{frame}
+
+\section{Literature Review}
+\subsection{Background - Code Marking in Introductory Courses}
+\begin{frame}
+	\frametitle{Code Marking in Introductory Courses}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item We assume that \textit{code marking} refers to the determination of whether submitted code when run conforms to some behaviour that is outlined in a specification or any similar resource
+			\pause
+		\item What are some potential issues with manual code marking?
+			\pause
+		\begin{itemize}
+			\item Tedious and repetitive work potentially prone to mistakes\footnote{missing source}
+				\pause
+			\item Potential inconsistencies when distributed between separate markers\footnote{my experiences marking => do last ditch survey?}
+				\pause
+			\item Increasing marking load per course staff member due to increasing student numbers can exacerbate the aforementioned issues
+				\pause
+		\end{itemize}
+		\item How can we eliminate or reduce these issues?
+	\end{enumerate}
+\end{frame}
+
+\subsection{Background - Automated Testing \& Marking Approaches}
+\begin{frame}
+	\frametitle{Automated Testing \& Marking Approaches}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Main goal:} Autonomously verify the correctness of student submitted code in relation to pre-defined expected behaviour
+			\pause
+		\item \textbf{Main benefit:} Automation of performance/correctness testing of student submitted code
+		\begin{itemize} 
+			\item Time spent on manual marking can be utilised in other tasks
+				\pause
+			\item Any fix from incorrect marking tests can be quickly rolled out to all students 
+				\pause
+			\item Economically beneficial as costs to pay staff for manual marking is minimised 
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{Automated Testing \& Marking Approaches}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item How can we methodically determine that \textit{"submitted code matches expected behaviour"}?
+			\pause
+		\begin{itemize} 
+			\item External Program Side-effect Comparison
+				\pause
+			\item Internal Program Unit Testing
+				\pause
+			\item Combination of above
+				\pause
+		\end{itemize}
+		\item What are the specifics of these methodologies and what are some existing automated testing frameworks?
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{External Program Side-effect Comparison}
+	\begin{columns}
+		\begin{column}{0.7\textwidth}
+			\begin{enumerate}
+				\setlength\itemsep{0.75em}
+				\item Assume program side-effects to be \textbf{observable output} from a tested program which has been stored on external resources such as the console via \textit{stdout} or files that store logs/program state
+					\pause
+				\item This output can be \textbf{externally compared} with those pre-generated by a sample solution to determine whether expected behaviour has been achieved
+					\pause
+				\item Comparisons on side-effects after program execution allows for easier testing of complex programs with dependencies on multiple different components at the cost of storage space
+					\pause
+			\end{enumerate}
+		\end{column}
+		\begin{column}{0.2\textwidth}
+			Need graph outlining process of generating and comparing side-effects in side column
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}
+	\frametitle{Internal Program Unit Testing}
+	\begin{columns}
+		\begin{column}{0.7\textwidth}
+			\begin{enumerate}
+				\setlength\itemsep{0.75em}
+				\item Assume unit testing refers to the testing of \textbf{individual discrete code components} within the program by comparing internal program state to a known expected state pre-generated by a sample solution
+					\pause
+				\item Executing and collecting the results of the internal unit tests for the program can be used to determine whether expected behaviour has been achieved
+					\pause
+				\item Testing internal code components allow for more thorough determination of program correctness at the cost of difficulty in testing more complex programs which may not be able to share the same unit testing framework
+					\pause
+			\end{enumerate}
+		\end{column}
+		\begin{column}{0.2\textwidth}
+			Need graph outlining process of unit testing in side column here
+		\end{column}
+	\end{columns}
+\end{frame}
+
+\subsection{Existing Work - Andrew Taylor autotest}
+\begin{frame}
+	\frametitle{Andrew Taylor autotest}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Andrew Taylor - 2015 
+			\pause
+		\item \textbf{Testing Methodology:} External Program Side-effect Comparison 
+			\pause
+		\item \textbf{Language:} Python (+ some Shell and Perl script interfaces) 
+			\pause
+		\item \textbf{Maintained/Support:} Not regularly maintained outside of rare UNSW CSE student engagement
+			\pause 
+		\item Current UNSW CSE automated general code testing tool utilised for lab and assessment marking in most introductory programming courses and at times, some higher level courses (COMP Level 2+) 
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{Andrew Taylor autotest implementation details}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			Example test case goes here
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			Graph of autotest architecture goes here
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}
+	\frametitle{Andrew Taylor autotest pros \& cons}
+	\begin{enumerate}
+		\item \textbf{Pros:}
+		\begin{itemize}
+			\item Proven to be \textit{mostly} reliable at UNSW CSE
+			\item Can support any programming language assuming autotest can detect and compare side-effects
+			\item Extensive parameters exposed to manage test execution environment
+			\item Test results on failure provide meaningful information on the differences between actual and expected output
+		\end{itemize}
+			\pause
+		\item \textbf{Cons:}
+		\begin{itemize}
+			\item High levels of technical debt due to outdated use of technology and architecture
+			\item Significant lack of documentation
+			\item Difficult for first-time users to create tests and manage test execution environment
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+\subsection{Existing Work - Harvard Uni CS50 check50}
+\begin{frame}
+	\frametitle{Harvard Uni CS50 check50}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Chad Sharp - v2.0 released in 2017 (no earlier records)
+			\pause
+		\item \textbf{Testing Methodology:} External Program Side-effect Comparison 
+			\pause
+		\item \textbf{Language:} Python
+			\pause
+		\item \textbf{Maintained/Support:} Regularly maintained with active development (in private repository)
+			\pause 
+		\item Current Harvard University CS50: Introduction to Computer Science automated general code testing tool for checking correctness of practical lab exercises
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{Harvard Uni CS50 check50 implementation details}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			Example test case goes here
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			Graph of autotest architecture goes here
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}
+	\frametitle{Harvard Uni CS50 check50 pros \& cons}
+	\begin{enumerate}
+		\item \textbf{Pros:}
+		\begin{itemize}
+			\item Tests are very simple to create as a chain of functions
+			\item Documentation is very extensive
+			\item Testing results can be rendered to HTML via a module for easier viewing
+			\item Supports running of tests on both local and remote machines (PaaS Support)
+			\item Concurrent running of tests is supported 
+		\end{itemize}
+			\pause
+		\item \textbf{Cons:}
+		\begin{itemize}
+			\item As a result of design choice for simplicity, testing of complex programs can be challenging (may require Harnessing)
+			\item No official support or implementations for programming languages outside of C and Python (Flask Supported)
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+\subsection{Existing Work - Google gtest}
+\begin{frame}
+	\frametitle{Google gtest}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Google - v1.0.0 released in 2008
+			\pause
+		\item \textbf{Testing Methodology:} Internal Program Unit Testing (Technically Supports External Program Side-effect Comparison)
+			\pause
+		\item \textbf{Language:} C++
+			\pause
+		\item \textbf{Maintained/Support:} Regularly maintained by Google and Open Source Community
+			\pause 
+		\item Originally created by Google for internal use but has become one of the most popular C++ unit testing frameworks
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{Google gtest implementation details}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			Example test case goes here
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			Graph of gtest process goes here
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}
+	\frametitle{Google gtest pros \& cons}
+	\begin{enumerate}
+		\item \textbf{Pros:}
+		\begin{itemize}
+			\item Pro 1 goes here
+		\end{itemize}
+			\pause
+		\item \textbf{Cons:}
+		\begin{itemize}
+			\item Con 1 goes here
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+\subsection{Existing Work - JUnit}
+\begin{frame}
+	\frametitle{JUnit}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Kent Beck, Erich Gamma, David Saff, Kris Vasudevan - Initial Prototype in 1997\footnote{Martin Fowler, "Bliki: Xunit", \textit{martinfowler.com} (Webpage, 2022) <https://martinfowler.com/bliki/Xunit.html>}
+			\pause
+		\item \textbf{Testing Methodology:} Internal Program Unit Testing (Technically Supports External Program Side-effect Comparison)
+			\pause
+		\item \textbf{Language:} Java
+			\pause
+		\item \textbf{Maintained/Support:} Regularly maintained by JUnit team and Open Source Community
+			\pause 
+		\item A very popular open source unit testing framework for Java applications within the xUnit family of testing frameworks
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{JUnit implementation details}
+	\begin{columns}
+		\begin{column}{0.45\textwidth}
+			Example test case goes here
+		\end{column}
+		\begin{column}{0.45\textwidth}
+			Graph of pytest process goes here
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}
+	\frametitle{JUnit pros \& cons}
+	\begin{enumerate}
+		\item \textbf{Pros:}
+		\begin{itemize}
+			\item Pro 1 goes here
+		\end{itemize}
+			\pause
+		\item \textbf{Cons:}
+		\begin{itemize}
+			\item Con 1 goes here
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+\section{Design}
+\subsection{Design Requirements}
+\begin{frame}
+	\frametitle{Design Requirements}
+	The design requirements for the solution will follow along
+\end{frame}
+\begin{frame}
+	\frametitle{Exclusions}
+	Blah Blah Blah
+\end{frame}
+\subsection{Proposed Design}
+\begin{frame}
+	\frametitle{Proposed Design}
+	Blah Blah Blah
+\end{frame}
+
+\section{Schedule \& Conclusion}
+\subsection{Schedule}
+\begin{frame}
+	\frametitle{Schedule}
+	\begin{enumerate}
+		\item Rest of thesis A:
+		\begin{itemize}
+			\item Continue inspection of Andrew Taylor autotest implementation
+				\pause
+			\item Complete Draft Design Document
+				\pause
+			\item Collect feedback on Design Document and make adjustments as necessary
+				\pause 
+		\end{itemize}
+		\item Thesis B:
+		\begin{itemize}
+			\item Implement Core Main Module
+				\pause
+			\item Implement Core Testcase Parser Module
+				\pause
+			\item Implement Core Testcase Runner Module
+				\pause
+			\item Run correctness and performance testing on Parser and Runner
+				\pause
+		\end{itemize}
+		\item Thesis C:
+		\begin{itemize}
+			\item Implement Core Testcase Program Correctness Module
+				\pause
+			\item Implement any extensions that have been deemed necessary by the Design Document
+				\pause
+			\item Run correctness and performance testing on complete package and make final adjustments
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+\subsection{Summary}
+\begin{frame}
+	\frametitle{Summary}
+	Blah Blah Blah
+\end{frame}
+\subsection{References}
+\begin{frame}
+	\frametitle{References}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item Tom Edith, Aybüke Aurum and Richard Vidgen, ‘An Exploration of Technical Debt’ (2013) 86(6) \textit{The Journal of systems and software 1498}
+		\item Cunningham, Ward, ‘The WyCash Portfolio Management System’ in \textit{Addendum to the Proceedings on Object-Oriented Programming Systems, Languages, and Applications (addendum)} (ACM, 1992) 29
+		\item Martin Fowler, "Bliki: Xunit", \textit{martinfowler.com} (Webpage, 2022) <https://martinfowler.com/bliki/Xunit.html>
+	\end{enumerate}
 \end{frame}
 \end{document}
