@@ -7,8 +7,9 @@
 \useinnertheme{circles}
 
 \makeatletter
+\setbeamertemplate{mini frames}{}
 \setbeamertemplate{headline}{%
-	\begin{beamercolorbox}[ht=2.25ex,dp=3.75ex]{section in head/foot}
+	\begin{beamercolorbox}[ht=2.5ex,dp=1.125ex]{section in head/foot}
 		\insertnavigation{\paperwidth}
 	\end{beamercolorbox}%
 }%
@@ -60,10 +61,15 @@
 }
 
 \usepackage{graphicx}
-\graphicspath{{files/}}
+\graphicspath{{./files/}}
 
 \usepackage{tikz}
-\usetikzlibrary{arrows}
+\usetikzlibrary{shapes.geometric, positioning}
+% tikz style
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=white]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=0.75cm, text centered, draw=white]
+\tikzstyle{process} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=white]
+\tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=white]
 
 \usepackage{cancel}
 
@@ -153,7 +159,7 @@
 		\setlength\itemsep{1em}
 		\item We approach technical debt as outlined in the framework defined within \textit{An Exploration of Technical Debt}\footnote{Tom Edith, Aybüke Aurum and Richard Vidgen, ‘An Exploration of Technical Debt’ (2013) 86(6) \textit{The Journal of systems and software 1498}}
 			\pause
-		\item Cunningham\footnote{Cunningham, Ward, ‘The WyCash Portfolio Management System’ in \textit{Addendum to the Proceedings on Object-Oriented Programming Systems, Languages, and Applications (addendum)} (ACM, 1992) 29}, who introduced the concept of technical debt, described how \textit{“shipping first time code is like going into debt. A little debt speeds development so long as it is paid back promptly with a rewrite”}
+		\item Cunningham\footnote{Ward Cunningham, ‘The WyCash Portfolio Management System’ in \textit{Addendum to the Proceedings on Object-Oriented Programming Systems, Languages, and Applications (addendum)} (ACM, 1992) 29}, who introduced the concept of technical debt, described how \textit{“shipping first time code is like going into debt. A little debt speeds development so long as it is paid back promptly with a rewrite”}
 			\pause
 		\item How can we reconcile existing technical debt and ensure debt remains manageable in the future?
 	\end{enumerate}
@@ -188,12 +194,12 @@
 		\setlength\itemsep{1em}
 		\item We assume that \textit{code marking} refers to the determination of whether submitted code when run conforms to some behaviour that is outlined in a specification or any similar resource
 			\pause
-		\item What are some potential issues with manual code marking?
+		\item What are some potential issues with manual code marking?\footnote{Jackson David, ‘Using Software Tools to Automate the Assessment of Student Programs’ (1991) 17(2) \textit{Computers and education} 133}
 			\pause
 		\begin{itemize}
-			\item Tedious and repetitive work potentially prone to mistakes\footnote{missing source}
+			\item Tedious and repetitive work potentially prone to mistakes by human error
 				\pause
-			\item Potential inconsistencies when distributed between separate markers\footnote{my experiences marking => do last ditch survey?}
+			\item Potential inconsistencies when distributed between separate markers
 				\pause
 			\item Increasing marking load per course staff member due to increasing student numbers can exacerbate the aforementioned issues
 				\pause
@@ -207,15 +213,17 @@
 	\frametitle{Automated Testing \& Marking Approaches}
 	\begin{enumerate}
 		\setlength\itemsep{1em}
+		\item The earliest example of automated testing on student code was published in 1960 by Jack Hollingsworth of the Rensselaer Polytechnic Institute\footnote{Jack Hollingsworth, ‘Automatic Graders for Programming Classes’ (1960) 3(10) \textit{Communications of the ACM 528}}
+			\pause
 		\item \textbf{Main goal:} Autonomously verify the correctness of student submitted code in relation to pre-defined expected behaviour
 			\pause
 		\item \textbf{Main benefit:} Automation of performance/correctness testing of student submitted code
 		\begin{itemize} 
-			\item Time spent on manual marking can be utilised in other tasks
+			\item Time spent on manual testing by staff can be utilised in other tasks
 				\pause
-			\item Any fix from incorrect marking tests can be quickly rolled out to all students 
+			\item Students were observed to learn programming better with an automatic grader over dedicated lab groups 
 				\pause
-			\item Economically beneficial as costs to pay staff for manual marking is minimised 
+			\item Increasing enrolments for programming courses per teaching period becomes economically feasible 
 		\end{itemize}
 	\end{enumerate}
 \end{frame}
@@ -223,14 +231,14 @@
 	\frametitle{Automated Testing \& Marking Approaches}
 	\begin{enumerate}
 		\setlength\itemsep{1em}
-		\item How can we methodically determine that \textit{"submitted code matches expected behaviour"}?
+		\item How can we methodically determine that \textit{``submitted code matches expected behaviour"}?
 			\pause
 		\begin{itemize} 
 			\item External Program Side-effect Comparison
 				\pause
 			\item Internal Program Unit Testing
 				\pause
-			\item Combination of above
+			\item Combination of above\footnote{Soundous Zougari, Mariam Tanana and Abdelouahid Lyhyaoui, ‘Hybrid Assessment Method for Programming Assignments’ in \textit{2016 4th IEEE International Colloquium on Information Science and Technology (CiSt)} (IEEE, 2016) 564}
 				\pause
 		\end{itemize}
 		\item What are the specifics of these methodologies and what are some existing automated testing frameworks?
@@ -239,25 +247,42 @@
 \begin{frame}
 	\frametitle{External Program Side-effect Comparison}
 	\begin{columns}
+		\begin{column}{0.25\textwidth}
+			\begin{tikzpicture}
+				\node (Tester)[process]{Tester};
+				\node (Program Output)[io, below = 2em of Tester, align=center]{Program\\Output};
+				\node (Program)[process, below = 2em of Program Output]{Program};
+				\node (Expected Output)[io, above = 2em of Tester, align=center]{Expected\\Output};
+				\draw [-stealth] (Expected Output) -- (Tester);
+				\draw [-stealth] (Program Output) -- (Tester);
+				\draw [-stealth] (Program) -- (Program Output);
+				\draw [-stealth, rounded corners] (Tester.east) -- (1.5,0) |- (Program.east);
+			\end{tikzpicture}
+		\end{column}
 		\begin{column}{0.7\textwidth}
 			\begin{enumerate}
-				\setlength\itemsep{0.75em}
+				\setlength\itemsep{0.70em}
 				\item Assume program side-effects to be \textbf{observable output} from a tested program which has been stored on external resources such as the console via \textit{stdout} or files that store logs/program state
 					\pause
 				\item This output can be \textbf{externally compared} with those pre-generated by a sample solution to determine whether expected behaviour has been achieved
 					\pause
 				\item Comparisons on side-effects after program execution allows for easier testing of complex programs with dependencies on multiple different components at the cost of storage space
-					\pause
 			\end{enumerate}
-		\end{column}
-		\begin{column}{0.2\textwidth}
-			Need graph outlining process of generating and comparing side-effects in side column
 		\end{column}
 	\end{columns}
 \end{frame}
 \begin{frame}
 	\frametitle{Internal Program Unit Testing}
 	\begin{columns}
+		\begin{column}{0.25\textwidth}
+			\begin{tikzpicture}
+				\node (Tester)[process]{Tester};
+				\node (Program)[process, below = 2em of Tester]{Program};
+				\node (Expected Output)[io, above = 2em of Tester, align=center]{Expected\\State};
+				\draw [-stealth] (Expected Output) -- (Tester);
+				\draw [-stealth] (Program) -- (Tester);
+			\end{tikzpicture}
+		\end{column}
 		\begin{column}{0.7\textwidth}
 			\begin{enumerate}
 				\setlength\itemsep{0.75em}
@@ -266,11 +291,7 @@
 				\item Executing and collecting the results of the internal unit tests for the program can be used to determine whether expected behaviour has been achieved
 					\pause
 				\item Testing internal code components allow for more thorough determination of program correctness at the cost of difficulty in testing more complex programs which may not be able to share the same unit testing framework
-					\pause
 			\end{enumerate}
-		\end{column}
-		\begin{column}{0.2\textwidth}
-			Need graph outlining process of unit testing in side column here
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -280,7 +301,7 @@
 	\frametitle{Andrew Taylor autotest}
 	\begin{enumerate}
 		\setlength\itemsep{1em}
-		\item \textbf{Author(s) \& Introduction:} Andrew Taylor - 2015 
+		\item \textbf{Author(s) \& Introduction:} Andrew Taylor (University of New South Wales) - 2015 
 			\pause
 		\item \textbf{Testing Methodology:} External Program Side-effect Comparison 
 			\pause
@@ -291,14 +312,41 @@
 		\item Current UNSW CSE automated general code testing tool utilised for lab and assessment marking in most introductory programming courses and at times, some higher level courses (COMP Level 2+) 
 	\end{enumerate}
 \end{frame}
-\begin{frame}
+\begin{frame}[fragile]
 	\frametitle{Andrew Taylor autotest implementation details}
 	\begin{columns}
-		\begin{column}{0.45\textwidth}
-			Example test case goes here
+		\begin{column}{0.55\textwidth}
+			\centering
+\begin{lstlisting}[caption={autotest Example Test Cases}]
+files=is_prime.c
+
+1 stdin="39" expected_stdout="39 is not prime\n"
+2 stdin="42" expected_stdout="42 is not prime\n"
+3 stdin="47" expected_stdout="47 is prime\n"
+\end{lstlisting}
+\begin{lstlisting}[language=bash, breaklines=true, caption={autotest Wrapper}]
+#!/bin/sh
+
+parameters="
+default_compilers = {'c' : [['clang', '-Werror', '-std=gnu11', '-g', '-lm']]}
+upload_url = https://example.com/autotest.cgi
+"
+
+exec <path_to_autotest>/autotest.py --exercise_directory <path_to_exercise_dir> --parameters "$parameters" "$@"
+\end{lstlisting}
 		\end{column}
-		\begin{column}{0.45\textwidth}
-			Graph of autotest architecture goes here
+		\begin{column}{0.35\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node (Tester)[process]{autotest};
+				\node (Program Output)[io, below = 2em of Tester, align=center]{Program\\Output};
+				\node (Program)[process, below = 2em of Program Output]{Program};
+				\node (Expected Output)[io, above = 2em of Tester, align=center]{Test Case};
+				\draw [-stealth] (Expected Output) -- (Tester);
+				\draw [-stealth] (Program Output) -- (Tester);
+				\draw [-stealth] (Program) -- (Program Output);
+				\draw [-stealth, rounded corners] (Tester.east) -- (1.5,0) |- (Program.east);
+			\end{tikzpicture}
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -327,7 +375,7 @@
 	\frametitle{Harvard Uni CS50 check50}
 	\begin{enumerate}
 		\setlength\itemsep{1em}
-		\item \textbf{Author(s) \& Introduction:} Chad Sharp - v2.0 released in 2017 (no earlier records)
+		\item \textbf{Author(s) \& Introduction:} Chad Sharp (Harvard University) - 2012\footnote{Chad Sharp et al, ‘An Open-Source, API-Based Framework for Assessing the Correctness of Code in CS50’ in \textit{Proceedings of the 2020 ACM Conference on Innovation and Technology in Computer Science Education} (ACM, 2020) 487}
 			\pause
 		\item \textbf{Testing Methodology:} External Program Side-effect Comparison 
 			\pause
@@ -338,14 +386,42 @@
 		\item Current Harvard University CS50: Introduction to Computer Science automated general code testing tool for checking correctness of practical lab exercises
 	\end{enumerate}
 \end{frame}
-\begin{frame}
+\begin{frame}[fragile]
 	\frametitle{Harvard Uni CS50 check50 implementation details}
 	\begin{columns}
-		\begin{column}{0.45\textwidth}
-			Example test case goes here
+		\begin{column}{0.55\textwidth}
+			\centering		
+\begin{lstlisting}[language=python, breaklines=true, caption={check50 tests}]
+import check50
+import check50.c
+
+@check50.check()
+def exists():
+"""hello.c exists"""
+check50.exists("hello.c")
+
+@check50.check(exists)
+def compiles():
+"""hello.c compiles"""
+check50.c.compile("hello.c", lcs50=True)
+
+@check50.check(compiles)
+def emma():
+"""responds to name Emma"""
+check50.run("./hello").stdin("Emma").stdout("Emma").exit()
+\end{lstlisting}
 		\end{column}
-		\begin{column}{0.45\textwidth}
-			Graph of autotest architecture goes here
+		\begin{column}{0.35\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node (Tester)[process]{check50};
+				\node (Test Runner)[process, below = 2em of Tester]{Test Runner};
+				\node (Tests)[io, above = 2em of Tester, align=center]{Test Cases};
+				\node (Program)[process, below = 2em of Test Runner]{Program};
+				\draw [-stealth] (Tests) -- (Tester);
+				\draw [stealth-stealth] (Tester) -- (Test Runner);
+				\draw [stealth-stealth] (Test Runner) -- (Program);
+			\end{tikzpicture}
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -382,17 +458,39 @@
 			\pause
 		\item \textbf{Maintained/Support:} Regularly maintained by Google and Open Source Community
 			\pause 
-		\item Originally created by Google for internal use but has become one of the most popular C++ unit testing frameworks
+		\item Originally created by Google for internal use but has become one of the most popular C++ unit testing frameworks within the xUnit family of testing frameworks
 	\end{enumerate}
 \end{frame}
-\begin{frame}
+\begin{frame}[fragile]
 	\frametitle{Google gtest implementation details}
 	\begin{columns}
 		\begin{column}{0.45\textwidth}
-			Example test case goes here
+			\centering
+\begin{lstlisting}[language=c, breaklines=true, caption={gtest test cases}]
+TEST(FactorialTest, Positive) {
+    EXPECT_EQ(1, Factorial(1));
+    EXPECT_EQ(2, Factorial(2));
+    EXPECT_EQ(6, Factorial(3));
+    EXPECT_EQ(40320, Factorial(8));
+}
+
+TEST(IsPrimeTest, Positive) {
+    EXPECT_FALSE(IsPrime(4));
+    EXPECT_TRUE(IsPrime(5));
+    EXPECT_FALSE(IsPrime(6));
+    EXPECT_TRUE(IsPrime(23));
+}
+\end{lstlisting}
 		\end{column}
 		\begin{column}{0.45\textwidth}
-			Graph of gtest process goes here
+			\centering
+			\begin{tikzpicture}
+				\node (Tester)[process]{gtest Runner};
+				\node (Program)[process, below = 2em of Tester]{Program};
+				\node (Tooling)[process, below = 2em of Program]{Google Test Library};
+				\draw [stealth-stealth] (Tester) -- (Program);
+				\draw [-stealth] (Tooling) -- (Program);
+			\end{tikzpicture}
 		\end{column}
 	\end{columns}
 \end{frame}
@@ -401,12 +499,15 @@
 	\begin{enumerate}
 		\item \textbf{Pros:}
 		\begin{itemize}
-			\item Pro 1 goes here
+			\item Documentation is extensive with a large community
+			\item Concurrent execution of tests is supported
+			\item Performance benefits of C++
 		\end{itemize}
 			\pause
 		\item \textbf{Cons:}
 		\begin{itemize}
-			\item Con 1 goes here
+			\item Testing of complex systems can be difficult as per standard with Internal Program Unit Testing methodology
+			\item Setting up test execution environment is not common for most users and can be difficult to configure based on testing needs
 		\end{itemize}
 	\end{enumerate}
 \end{frame}
@@ -427,29 +528,45 @@
 		\item A very popular open source unit testing framework for Java applications within the xUnit family of testing frameworks
 	\end{enumerate}
 \end{frame}
+
+\subsection{Existing Work - Historic Software}
 \begin{frame}
-	\frametitle{JUnit implementation details}
-	\begin{columns}
-		\begin{column}{0.45\textwidth}
-			Example test case goes here
-		\end{column}
-		\begin{column}{0.45\textwidth}
-			Graph of pytest process goes here
-		\end{column}
-	\end{columns}
+	\frametitle{BAGS - Basser Automatic Grading Scheme}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} J Hext and J Winings (University of Sydney) - Earliest Documented in 1968\footnote{J Hext and J Winings, ‘An Automatic Grading Scheme for Simple Programming Exercises’ (1969) 12(5) \textit{Communications of the ACM} 272}
+			\pause
+		\item \textbf{Testing Methodology:} Primitive External Program Side-effect Comparison
+			\pause
+		\item \textbf{Language:} Unknown (one of the KDF9 Operating System languages)
+			\pause
+		\item \textbf{Maintained/Support:} Unknown (Assumed to be abandoned due to age)
+	\end{enumerate}
 \end{frame}
 \begin{frame}
-	\frametitle{JUnit pros \& cons}
+	\frametitle{Kassandra}
 	\begin{enumerate}
-		\item \textbf{Pros:}
-		\begin{itemize}
-			\item Pro 1 goes here
-		\end{itemize}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Urs von Matt (ETH Zürich) - Earliest Documented in Winter term 1992/1993\footnote{Urs von Matt, ‘Kassandra’ (1994) 22(1) \textit{SIGCUE bulletin} 26>}
 			\pause
-		\item \textbf{Cons:}
-		\begin{itemize}
-			\item Con 1 goes here
-		\end{itemize}
+		\item \textbf{Testing Methodology:} External Program Side-effect Comparison
+			\pause
+		\item \textbf{Language:} Bash Shell \& MatLab \& Maple
+			\pause
+		\item \textbf{Maintained/Support:} Unknown (Assumed to be abandoned due to age)
+	\end{enumerate}
+\end{frame}
+\begin{frame}
+	\frametitle{TRY}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textbf{Author(s) \& Introduction:} Kenneth A Reek (Rochester Institute of Technlogy) - 1989 at Earliest\footnote{Kenneth A Reek, ‘The TRY System -or- How to Avoid Testing Student Programs’ (1989) 21(1) \textit{ACM SIGCSE Bulletin} 112}
+			\pause
+		\item \textbf{Testing Methodology:} External Program Side-effect Comparison
+			\pause
+		\item \textbf{Language:} C
+			\pause
+		\item \textbf{Maintained/Support:} Unknown (Assumed to be abandoned due to age)
 	\end{enumerate}
 \end{frame}
 
@@ -457,16 +574,95 @@
 \subsection{Design Requirements}
 \begin{frame}
 	\frametitle{Design Requirements}
-	The design requirements for the solution will follow along
+	The design requirements for the solution will emphasise the following properties in accordance with the thesis goals:\\
+	\begin{enumerate}
+		\setlength\itemsep{0.5em}
+		\item \textit{Accessible} - Users of the new software package should have the easiest possible experience in integrating automatic testing and grading into their courses
+			\pause
+		\item \textit{Familiar} - Users who have previously utilised Andrew Taylor autotest should not feel the new software package to be completely independent of the former 
+			\pause
+		\item \textit{Performant/Efficient} - The new software package should have the same, if not better performance than the original Andrew Taylor autotest. Benchmarking will be performed to verify this property
+			\pause
+		\item \textit{Maintainable} - The new software package should be adequately documented with architectural decisions to increase ease of maintainability and possible extension of features
+	\end{enumerate}
 \end{frame}
 \begin{frame}
 	\frametitle{Exclusions}
-	Blah Blah Blah
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item \textit{Security} - We assume security to be out of scope as this is not a consideration in the existing Andrew Taylor autotest software package
+			\pause
+		\item Security considerations will greatly increase the complexity of the software and delivery of the software package before the conclusion of Thesis C is likely to be infeasible
+			\pause
+		\item \textit{Novelty} - We assume novelty to be out of scope as introducing a novel user experience is in conflict with the aforementioned design requirements
+			\pause
+		\item Users of the existing Andrew Taylor autotest may elect to not utilise the new software package if the transition is less than convenient
+	\end{enumerate}
 \end{frame}
+
 \subsection{Proposed Design}
+\begin{frame}[fragile]
+	\frametitle{Approach 1}
+	\begin{columns}
+		\begin{column}{0.6\textwidth}
+			\begin{enumerate}
+				\setlength\itemsep{0.70em}
+				\item Architectural approach similar to Harvard University check50
+				\item check50 can be utilised as a ``baseline" for both performance and correctness testing of the solution
+				\item Future Work and other relevant sections from the check50 paper can be utilised to inform implementation decisions for the solution
+				\item \textbf{Main methodology to determine correctness of tested program:} External Program Side-effect Comparison
+			\end{enumerate}
+		\end{column}
+		\begin{column}{0.35\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node (Tester)[process]{Tester};
+				\node (Test Runner)[process, below = 2em of Tester]{Test Runner};
+				\node (Tests)[io, above = 2em of Tester, align=center]{Test Cases};
+				\node (Program)[process, below = 2em of Test Runner]{Program};
+				\draw [-stealth] (Tests) -- (Tester);
+				\draw [stealth-stealth] (Tester) -- (Test Runner);
+				\draw [stealth-stealth] (Test Runner) -- (Program);
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
+\end{frame}
+\begin{frame}[fragile]
+	\frametitle{Approach 2}
+	\begin{columns}
+		\begin{column}{0.6\textwidth}
+			\begin{enumerate}
+				\setlength\itemsep{0.70em}
+				\item Architectural approach similar to existing Andrew Taylor autotest which has been widely accepted for introductory programming courses at UNSW
+				\item autotest can be utilised as a ``baseline" for both performance and correctness testing of the solution
+				\item \textbf{Main methodology to determine correctness of tested program:} External Program Side-effect Comparison
+			\end{enumerate}
+		\end{column}
+		\begin{column}{0.35\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node (Tester)[process]{Tester};
+				\node (Program Output)[io, below = 2em of Tester, align=center]{Program\\Output};
+				\node (Program)[process, below = 2em of Program Output]{Program};
+				\node (Expected Output)[io, above = 2em of Tester, align=center]{Expected\\Output};
+				\draw [-stealth] (Expected Output) -- (Tester);
+				\draw [-stealth] (Program Output) -- (Tester);
+				\draw [-stealth] (Program) -- (Program Output);
+				\draw [-stealth, rounded corners] (Tester.east) -- (1.5,0) |- (Program.east);
+			\end{tikzpicture}
+		\end{column}
+	\end{columns}
+\end{frame}
 \begin{frame}
-	\frametitle{Proposed Design}
-	Blah Blah Blah
+	\frametitle{Chosen Approach}
+	\begin{enumerate}
+		\setlength\itemsep{1em}
+		\item We select \textbf{Approach 2} over the alternative as it more compatible with the outlined design requirements 
+			\pause
+		\item We note that solutions implementing Approach 1 are more feature rich than Approach 2 but it must be considered that uptake of the solution is of higher importance than the features it provides
+			\pause
+		\item Features present from Approach 2 can also be added or removed in the interest of time but Approach 1 will provide a good starting point
+	\end{enumerate}
 \end{frame}
 
 \section{Schedule \& Conclusion}
@@ -507,16 +703,25 @@
 \subsection{Summary}
 \begin{frame}
 	\frametitle{Summary}
-	Blah Blah Blah
-\end{frame}
-\subsection{References}
-\begin{frame}
-	\frametitle{References}
-	\begin{enumerate}
-		\setlength\itemsep{1em}
-		\item Tom Edith, Aybüke Aurum and Richard Vidgen, ‘An Exploration of Technical Debt’ (2013) 86(6) \textit{The Journal of systems and software 1498}
-		\item Cunningham, Ward, ‘The WyCash Portfolio Management System’ in \textit{Addendum to the Proceedings on Object-Oriented Programming Systems, Languages, and Applications (addendum)} (ACM, 1992) 29
-		\item Martin Fowler, "Bliki: Xunit", \textit{martinfowler.com} (Webpage, 2022) <https://martinfowler.com/bliki/Xunit.html>
-	\end{enumerate}
+	We have covered:
+	\begin{itemize}
+		\item Student enrolments in Introductory Programming courses at UNSW, Andrew Taylor autotest, Technical Debt
+			\pause
+		\item The thesis statement
+			\pause
+		\item Code Marking in Introductory Courses
+			\pause
+		\item Approaches to Automated testing and marking
+			\pause
+		\item Existing and historic solutions for Automated testing and marking, deeper look into the most relevant solutions
+			\pause
+		\item Design requirements and exclusions
+			\pause
+		\item Approaches to the architecture of the solution
+			\pause
+		\item Development schedule of the solution over all thesis periods
+			\pause
+	\end{itemize}
+	\textit{\textbf{Thank you for attending!} Questions?}
 \end{frame}
 \end{document}

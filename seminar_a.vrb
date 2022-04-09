@@ -1,0 +1,24 @@
+\frametitle{Approach 2}
+^^I\begin{columns}
+^^I^^I\begin{column}{0.6\textwidth}
+^^I^^I^^I\begin{enumerate}
+^^I^^I^^I^^I\setlength\itemsep{0.70em}
+^^I^^I^^I^^I\item Architectural approach similar to existing Andrew Taylor autotest which has been widely accepted for introductory programming courses at UNSW
+^^I^^I^^I^^I\item autotest can be utilised as a ``baseline" for both performance and correctness testing of the solution
+^^I^^I^^I^^I\item \textbf{Main methodology to determine correctness of tested program:} External Program Side-effect Comparison
+^^I^^I^^I\end{enumerate}
+^^I^^I\end{column}
+^^I^^I\begin{column}{0.35\textwidth}
+^^I^^I^^I\centering
+^^I^^I^^I\begin{tikzpicture}
+^^I^^I^^I^^I\node (Tester)[process]{Tester};
+^^I^^I^^I^^I\node (Program Output)[io, below = 2em of Tester, align=center]{Program\\Output};
+^^I^^I^^I^^I\node (Program)[process, below = 2em of Program Output]{Program};
+^^I^^I^^I^^I\node (Expected Output)[io, above = 2em of Tester, align=center]{Expected\\Output};
+^^I^^I^^I^^I\draw [-stealth] (Expected Output) -- (Tester);
+^^I^^I^^I^^I\draw [-stealth] (Program Output) -- (Tester);
+^^I^^I^^I^^I\draw [-stealth] (Program) -- (Program Output);
+^^I^^I^^I^^I\draw [-stealth, rounded corners] (Tester.east) -- (1.5,0) |- (Program.east);
+^^I^^I^^I\end{tikzpicture}
+^^I^^I\end{column}
+^^I\end{columns}
