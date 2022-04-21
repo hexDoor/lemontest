@@ -73,7 +73,7 @@
 
 \usepackage{cancel}
 
-\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor (UNSW)\\Assessed by John Shephard (UNSW)}
+\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor (UNSW)\\Assessed by John Shepherd (UNSW)}
 \title[Thesis A Seminar]{A Testing Tool for Introductory Programming Courses}
 \subtitle{Thesis A Seminar}
 \date{Term 1, 2022}
@@ -126,13 +126,13 @@
 		\pause
 	The trend in increasing student enrolments for these courses present two main challenges for course staff:\\
 		\pause
-	
 	\begin{enumerate}
 		\item How can courses feasibly start/continue utilising practical assessments without automation tools as the staff to student ratio decreases?
 			\pause
-		\item How much of the marking process can be automated via tools and will the automation tools remain viable as assessments change?
+		\item How much of the marking process can be automated via tools?
+			\pause
+		\item Will the automation tools remain viable as assessments change?
 	\end{enumerate}
-	
 \end{frame}
 
 \subsection{Motivation - Andrew Taylor autotest}
@@ -164,6 +164,26 @@
 		\item How can we reconcile existing technical debt and ensure debt remains manageable in the future?
 	\end{enumerate}
 \end{frame}
+\begin{frame}
+	\frametitle{Approaches to Managing Technical Debt}
+	\begin{enumerate}
+		\setlength\itemsep{0.5em}
+		\item Extensive Project \& Code Documentation
+			\pause
+		\item Project Management Tools - GitHub, Jira etc.
+			\pause
+		\item Modular Architectural Design
+			\pause
+		\item Modernisation of Solution - Feature extensibility etc.
+			\pause
+		\item Automated Regression Testing
+			\pause
+	\end{enumerate}
+	~\\
+	Introducing all of these technical debt management solutions to the existing Andrew Taylor autotest software package has been determined to be infeasible due to the extensive refactoring required.
+	\\~\\
+	Thus, we propose that a new software package be created from a clean slate to minimise potential sources for both current and future technical debt from the ground up.
+\end{frame}
 
 \subsection{Thesis Statement}
 \begin{frame}
@@ -175,6 +195,8 @@
 		\pause
 	\begin{enumerate}
 		\item Develop an extensible and easy to use software package which parses and runs pre-written tests on submitted code
+			\pause
+		\item Implement development procedures that minimise both current and future technical debt
 			\pause
 		\item Remediate known flaws in the existing autotest package
 			\pause
@@ -197,7 +219,7 @@
 		\item What are some potential issues with manual code marking?\footnote{Jackson David, ‘Using Software Tools to Automate the Assessment of Student Programs’ (1991) 17(2) \textit{Computers and education} 133}
 			\pause
 		\begin{itemize}
-			\item Tedious and repetitive work potentially prone to mistakes by human error
+			\item Tedious and repetitive work is prone to mistakes by human error
 				\pause
 			\item Potential inconsistencies when distributed between separate markers
 				\pause
@@ -370,9 +392,9 @@ exec <path_to_autotest>/autotest.py --exercise_directory <path_to_exercise_dir> 
 	\end{enumerate}
 \end{frame}
 
-\subsection{Existing Work - Harvard Uni CS50 check50}
+\subsection{Existing Work - Harvard CS50 check50}
 \begin{frame}
-	\frametitle{Harvard Uni CS50 check50}
+	\frametitle{Harvard CS50 check50}
 	\begin{enumerate}
 		\setlength\itemsep{1em}
 		\item \textbf{Author(s) \& Introduction:} Chad Sharp (Harvard University) - 2012\footnote{Chad Sharp et al, ‘An Open-Source, API-Based Framework for Assessing the Correctness of Code in CS50’ in \textit{Proceedings of the 2020 ACM Conference on Innovation and Technology in Computer Science Education} (ACM, 2020) 487}
@@ -387,7 +409,7 @@ exec <path_to_autotest>/autotest.py --exercise_directory <path_to_exercise_dir> 
 	\end{enumerate}
 \end{frame}
 \begin{frame}[fragile]
-	\frametitle{Harvard Uni CS50 check50 implementation details}
+	\frametitle{Harvard CS50 check50 Implementation Details}
 	\begin{columns}
 		\begin{column}{0.55\textwidth}
 			\centering		
@@ -426,7 +448,7 @@ check50.run("./hello").stdin("Emma").stdout("Emma").exit()
 	\end{columns}
 \end{frame}
 \begin{frame}
-	\frametitle{Harvard Uni CS50 check50 pros \& cons}
+	\frametitle{Harvard CS50 check50 Pros \& Cons}
 	\begin{enumerate}
 		\item \textbf{Pros:}
 		\begin{itemize}
@@ -462,7 +484,7 @@ check50.run("./hello").stdin("Emma").stdout("Emma").exit()
 	\end{enumerate}
 \end{frame}
 \begin{frame}[fragile]
-	\frametitle{Google gtest implementation details}
+	\frametitle{Google gtest Implementation Details}
 	\begin{columns}
 		\begin{column}{0.45\textwidth}
 			\centering
@@ -495,7 +517,7 @@ TEST(IsPrimeTest, Positive) {
 	\end{columns}
 \end{frame}
 \begin{frame}
-	\frametitle{Google gtest pros \& cons}
+	\frametitle{Google gtest Pros \& Cons}
 	\begin{enumerate}
 		\item \textbf{Pros:}
 		\begin{itemize}
@@ -512,7 +534,7 @@ TEST(IsPrimeTest, Positive) {
 	\end{enumerate}
 \end{frame}
 
-\subsection{Existing Work - JUnit}
+\subsection{Existing Work - Other \& Historic Software}
 \begin{frame}
 	\frametitle{JUnit}
 	\begin{enumerate}
@@ -528,8 +550,6 @@ TEST(IsPrimeTest, Positive) {
 		\item A very popular open source unit testing framework for Java applications within the xUnit family of testing frameworks
 	\end{enumerate}
 \end{frame}
-
-\subsection{Existing Work - Historic Software}
 \begin{frame}
 	\frametitle{BAGS - Basser Automatic Grading Scheme}
 	\begin{enumerate}
@@ -583,7 +603,7 @@ TEST(IsPrimeTest, Positive) {
 			\pause
 		\item \textit{Performant/Efficient} - The new software package should have the same, if not better performance than the original Andrew Taylor autotest. Benchmarking will be performed to verify this property
 			\pause
-		\item \textit{Maintainable} - The new software package should be adequately documented with architectural decisions to increase ease of maintainability and possible extension of features
+		\item \textit{Maintainable} - The new software package should be adequately documented and support ease of maintainability and possible extension of features via the appropriate architectural decisions
 	\end{enumerate}
 \end{frame}
 \begin{frame}
@@ -661,7 +681,9 @@ TEST(IsPrimeTest, Positive) {
 			\pause
 		\item We note that solutions implementing Approach 1 are more feature rich than Approach 2 but it must be considered that uptake of the solution is of higher importance than the features it provides
 			\pause
-		\item Features present from Approach 2 can also be added or removed in the interest of time but Approach 1 will provide a good starting point
+		\item Features present from alternative approaches can also be added or removed in the interest of time but Approach 2 will provide a good starting point
+			\pause
+		\item Regardless of approach, we will implement all aforementioned technical debt management procedures
 	\end{enumerate}
 \end{frame}
 
