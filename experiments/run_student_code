@@ -1,0 +1,268 @@
+#!/bin/bash
+
+: <<end-of-comment
+
+run the supplied command as a subsidiary uid
+
+If a pathname is supplied via --chown
+it is recursively chowned to the subordinate uid before running the command
+and chowned back to the user's primary uid afterwards.
+The pathname must be on a local filesystem, not NFS
+
+This allows execution in a temporary directory
+with any files created by the command chowned back to the user.
+
+By default the network namespace is unshared before running the user's primary uid 
+Network access can be enabled with --allow-network-access
+
+By default the command is run a cgroup limited to 128 processes
+A different limit can be specified with -u
+Note this is different to ulimit -u which species a (less useful) per user limit
+
+Several ulimit options are provided
+
+/home, /import and /export can be optionally hidden with the option --hide_home_directories 
+
+For example:
+
+$ temp_dir=$(mktemp -d)
+$ cd $temp_dir
+$ printf '#include <stdio.h>\nint main(void) {printf("Hello Andrew\\n");}' >a.c
+$ ls -l a.c
+-rw-r--r-- 1 andrewt andrewt 61 Jun 15 20:05 a.c
+$ run_student_code --chown $temp_dir sh -c '
+id
+clang a.c
+./a.out >output
+ls -l *
+'
+uid=65534(nobody) gid=60001(nobody) groups=60001(nobody)
+-rw-r--r-- 1 nobody nobody    61 Jun 16 08:29 a.c
+-rwxr-xr-x 1 nobody nobody 16528 Jun 16 08:30 a.out
+-rw-r--r-- 1 nobody nobody    13 Jun 16 08:30 output
+$ ls -l *
+-rw-r--r-- 1 andrewt andrewt    61 Jun 16 08:29 a.c
+-rwxr-xr-x 1 andrewt andrewt 16528 Jun 16 08:30 a.out
+-rw-r--r-- 1 andrewt andrewt    13 Jun 16 08:30 output
+$ run_student_code sh -c 'curl -sL https://deb.debian.org/debian/dists/stable/InRelease|wc -l'
+0
+$ run_student_code --allow-network-access sh -c 'curl -sL https://deb.debian.org/debian/dists/stable/InRelease|wc -l'
+1258
+$ run_student_code --hide-home-directories ls -ld ~
+ls: cannot access '/home/andrewt': Permission denied
+$ run_student_code -u 5 sh -c 'for i in $(seq 1 10); do sleep 10 & echo $i; done'
+1
+2
+3
+4
+sh: 0: Cannot fork
+
+end-of-comment
+
+
+ORIGINAL_PATH="$PATH"
+
+PATH="/bin:/usr/bin:$PATH"
+
+usage() {
+	echo "Usage: $0 [--chown <pathname>] [--allow-network-access] [--hide_home_directories] [-c <max-core-file-size>] [-f <max-file-size>] [-m <max-resident-set-size>] [-n <max-open-files>] [-s <max-stack-size>] [-s <max-stack-size>] [-t <max-CPU-time seconds>] [-u <-max-processes>] command>" 1>&2
+	exit 1
+}
+
+check_integer_argument() {
+	test -z "$1" && usage
+	[[ "$1" =~ ^[0-9]+$ ]] ||
+	 	usage
+}
+
+chown_pathname=
+unshare_net_options="--net"
+unshare_mount_options=
+hide_home_directories=
+max_processes=128
+
+# ulimit values
+
+max_core_size=0
+max_file_size_bytes=8192000
+max_rss_bytes=100000000
+max_open_files=256
+max_stack_bytes=32000000
+max_cpu_seconds=60
+    
+while true
+do
+	case "$1" in
+	--chown)
+		test -z "$2" && usage
+		chown_pathname="$2"
+		shift
+		;;
+	--hide-home-directories)
+		hide_home_directories=1
+		unshare_mount_options="--mount"
+		;;
+	--allow-network-access)
+		unshare_net_options=
+		;;
+	-c)
+		check_integer_argument "$2"
+ 		max_core_size=$2
+		shift
+		;;
+	-f)
+		check_integer_argument "$2"
+ 		max_file_size_bytes=$2
+		shift
+		;;
+	-m)
+		check_integer_argument "$2"
+ 		max_rss_bytes=$2
+		shift
+		;;
+	-n)
+		check_integer_argument "$2"
+ 		max_open_files=$2
+		shift
+		;;
+	-s)
+		check_integer_argument "$2"
+ 		max_stack_bytes=$2
+		shift
+		;;
+	-t)
+		check_integer_argument "$2"
+ 		max_cpu_seconds=$2
+		shift
+		;;
+	-u)
+		check_integer_argument "$2"
+ 		max_processes=$2
+		test "$max_processes" -lt 2 &&
+			max_processes=2
+		shift
+		;;
+	--)
+		break
+		;;
+	-*)
+		usage
+		;;
+	*)
+		break
+	esac
+	shift
+done
+
+test -n "$1" || 
+	usage
+	
+execute_command="systemd-run --quiet --user --scope -p TasksMax=$max_processes unshare $unshare_net_options $unshare_mount_options"
+
+ulimit_command="ulimit -c $max_core_size -f $max_file_size_bytes -m $max_rss_bytes -n $max_open_files -s $max_stack_bytes -t $max_cpu_seconds"
+
+
+# buildah unshare would be a simpler way to set up the uid/gid map
+# but produces extraneous messages on stderr
+
+# get our allowed subordinate uids & gids
+uid=$(id -u)
+gid=$(id -g)
+account=$(id -nu)
+subuid_range=$(
+    grep -E "^($uid|$account):" /etc/subuid|
+    cut -d: -f2-|
+    tr ':' ' '|
+    sed 1q
+    )
+subgid_range=$(
+    grep -E "^($uid|$account):" /etc/subgid|
+    cut -d: -f2-|
+    tr ':' ' '|
+    sed 1q
+    )
+
+test -n "$subuid_range" -a -n "$subgid_range" || {
+	echo "$0: could not find subordinate uids/gids in /etc/subuid or /etc/subgid" 1>&2
+	exit 1
+}
+# set up a fifo for communication to child
+
+fifo="$(mktemp -u)"
+trap 'rm -f "$fifo"' EXIT
+mkfifo -m 600 "$fifo" ||
+	exit 1
+ 
+(
+    # wait for child to send its pid
+    read pid <"$fifo"
+    # set uid/gid map for child
+    newuidmap "$pid" 0 "$uid" 1 1 $subuid_range
+    newgidmap "$pid" 0 "$gid" 1 1 $subgid_range
+    # tell child its maps are set
+    echo >"$fifo"
+) &
+
+exec unshare --user bash -c "$(cat <<'eof'
+
+	# retrieve some variables passed as arguments
+	ORIGINAL_PATH="$0"
+	fifo="$1"
+	shift
+	chown_pathname="$1"
+	shift
+	hide_home_directories="$1"
+	shift
+	execute_command="$1"
+	shift
+	ulimit_command="$1"
+	shift
+
+	# tell our parent our pid
+	echo $$ >"$fifo"
+	# wait for parent to set our uid/gid map
+	sed -n 1q <"$fifo"
+
+	trap '
+		test -n "$chown_pathname" &&
+			chown --silent -R "root:root" "$chown_pathname"
+	' EXIT
+	
+	trap 'exit 1' INT TERM
+
+	test -n "$chown_pathname" &&
+		chown --silent -R nobody:nobody "$chown_pathname"
+
+	$execute_command bash -c '
+
+		ORIGINAL_PATH="$0" 
+		hide_home_directories="$1"
+		shift
+		ulimit_command="$1"
+		shift
+
+		if test -n "$hide_home_directories"
+		then
+			# --hide-home-directories option has been specified
+			# so mount an empty directory on /import /home & /export
+			empty_directory=$(mktemp -d)
+			trap "rmdir $empty_directory" EXIT
+			chmod 500 $empty_directory
+			for d in home export import
+			do
+				test -d /$d &&
+					mount --bind $empty_directory /$d
+			done
+		fi
+
+		$ulimit_command ||
+			exit 1
+		
+		setpriv=$(command -v setpriv)
+		PATH="$ORIGINAL_PATH" exec "$setpriv" --reuid nobody --regid nobody --clear-groups -- "$@"
+		
+	' "$ORIGINAL_PATH" "$hide_home_directories" "$ulimit_command" "$@"
+	
+eof
+)" "$ORIGINAL_PATH" "$fifo" "$chown_pathname" "$hide_home_directories" "$execute_command" "$ulimit_command" "$@"
+
