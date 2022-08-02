@@ -5,14 +5,12 @@ import sys
 import re
 import signal
 import json
+import traceback
 from collections import OrderedDict
 
 from util.util import die
 
-from parser.argument_parser import argument_parser
-from parser.test_parser import test_parser
-
-from legacy_parser.command_line_arguments import process_arguments
+import legacy_parser.adapter as legacy_parser
 
 # interrupt handler
 # TODO: spin down any subprocesses if interrupted
@@ -21,9 +19,16 @@ def interrupt_handler(signum, frame):
 
 
 def execute_autotest():
-    # FIXME: use legacy parser
-    args, tests, parameters = process_arguments()
+    # setup parser
+    parser = legacy_parser.Parser()
+    # execute parser execution
+    parser.parse_arguments()
+    parser.parse_tests()
+    parser.post_parse_misc()
 
+    # check shit is working
+    args = parser.args()
+    tests = parser.tests()
     if args.print_test_names:
         test_groups = OrderedDict()
         for test in tests.values():

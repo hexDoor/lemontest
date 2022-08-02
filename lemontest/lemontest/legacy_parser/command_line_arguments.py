@@ -1,21 +1,9 @@
 # process command-line arguments
 
-import argparse
-import fnmatch
-import os
-import re
-import sys
-import pkgutil
-import tempfile
-import atexit
-import io
-import shutil
-import tarfile
-
-from legacy_parser.parse_test_specification import parse_file, parse_string
-from util.util import die
-# FIXME: Re-establish test class
-from run_test import _Test
+import argparse, fnmatch, os, re, sys
+from parse_test_specification import parse_file, parse_string
+from util import die
+from copy_files_to_temp_directory import load_embedded_autotest
 
 # rewrite the extra help
 
@@ -32,27 +20,6 @@ Examples:
 autotest lab06                                 # all tests for lab06
 autotest lab08 -l lectures_3 lectures_4        # run specified tests
 """
-
-
-def process_arguments():
-    args = parse_arguments()
-
-    test_specification_pathname = find_test_specification(args)
-    tests_as_dicts, parameters = parse_file(
-        test_specification_pathname,
-        initial_parameters=args.initial_parameters,
-        initial_tests=args.initial_tests,
-        debug=args.debug,
-    )
-    tests = dict(
-        (label, _Test(args.autotest_directory, **t))
-        for (label, t) in tests_as_dicts.items()
-    )
-    if not tests:
-        die(f"no tests found for {args.exercise}")
-    normalize_arguments(args, tests)
-    return args, tests, parameters
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -419,26 +386,3 @@ def check_obsolete_arguments(args):
             die(
                 f"argument '{argument}' no longer supported, instead use -P to specify an equivalent value for parameter '{parameter_name}'"
             )
-
-def cleanup(temp_dir=None, args=None):
-    if args and args.debug >= 10:
-        return
-    if temp_dir and temp_dir.startswith("/tmp/"):
-        shutil.rmtree(temp_dir)
-
-def load_embedded_autotest(exercise):
-    """
-    if exercise is found as an embedded tar file
-    explode the tarfile to a temporary directory
-    and return the pathname for tests.txt
-    The script bundle_autotests.sh creates executablkes with embedded autotests.
-    """
-    tar_data = pkgutil.get_data("embedded_autotests", exercise + ".tar")
-    if not tar_data:
-        return None
-    temp_dir = tempfile.mkdtemp()
-    atexit.register(cleanup, temp_dir=temp_dir)
-    buffer = io.BytesIO(tar_data)
-    with tarfile.open(fileobj=buffer, mode="r|xz") as t:
-        t.extractall(temp_dir)
-    return os.path.join(temp_dir, "tests.txt")
