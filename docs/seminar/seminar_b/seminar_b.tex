@@ -1,0 +1,179 @@
+\documentclass[xcolor]{beamer}
+
+\usepackage[T1]{fontenc}
+
+\usetheme{Malmoe}
+\useoutertheme{infolines}
+\useinnertheme{circles}
+
+\makeatletter
+\setbeamertemplate{mini frames}{}
+\setbeamertemplate{headline}{%
+	\begin{beamercolorbox}[ht=2.5ex,dp=1.125ex]{section in head/foot}
+		\insertnavigation{\paperwidth}
+	\end{beamercolorbox}%
+}%
+\makeatother
+\setbeamertemplate{caption}[numbered]
+
+% Colours defined here
+\definecolor{DarkGreen}{HTML}{41964b}
+\definecolor{LightGreen}{HTML}{46c755}
+\definecolor{FG}{HTML}{ebebeb}
+\definecolor{BG2}{HTML}{233628}
+\definecolor{BG}{HTML}{202622}
+
+\setbeamercolor{palette primary}{bg=BG, fg=FG}
+\setbeamercolor{palette secondary}{bg=BG, fg=FG}
+\setbeamercolor{palette tertiary}{bg=BG, fg=FG}
+\setbeamercolor{palette quaternary}{bg=BG, fg=FG}
+
+\setbeamercolor{section in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{subsection in head/foot}{bg=BG2, fg=LightGreen}
+\setbeamercolor{page number in head/foot}{bg=BG2, fg=LightGreen}
+\setbeamercolor{author in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{date in head/foot}{bg=BG2, fg=DarkGreen}
+\setbeamercolor{title in head/foot}{bg=BG2, fg=LightGreen}
+
+\setbeamercolor{normal text}{fg=FG, bg=BG}
+\setbeamercolor{structure}{fg=LightGreen, bg=BG}
+
+\setbeamerfont{subsection in toc}{size=\scriptsize}
+\setbeamerfont{section in toc}{size=\footnotesize}
+
+\usefonttheme{serif}
+
+\usepackage{unicode-math}
+\setmainfont{Gentium Basic} % Main font
+\setmonofont{Fantasque Sans Mono} % Code font
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{microtype}
+
+\usepackage{listings}
+\lstset{%
+	language=C,
+	frame=single,
+	backgroundcolor=\color{BG2},
+	basicstyle={\tiny\ttfamily\color{FG}},
+	keywordstyle=\color{LightGreen}
+}
+
+\usepackage{graphicx}
+\graphicspath{{./files/}}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning}
+% tikz style
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm,text centered, draw=white]
+\tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=0.75cm, text centered, draw=white]
+\tikzstyle{process} = [rectangle, minimum width=2cm, minimum height=1cm, text centered, draw=white]
+\tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=white]
+
+\usepackage{cancel}
+
+\author[Kyu-Sang Kim]{Kyu-Sang Kim\\z5208931\\\vspace{0.2cm}Supervised by Andrew Taylor (UNSW)\\Assessed by John Shepherd (UNSW)}
+\title[Thesis B Seminar]{A Testing Tool for Introductory Programming Courses}
+\subtitle{Thesis B Seminar}
+\date{Term 2, 2022}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\AtBeginSection[]{
+	\begin{frame}
+		\frametitle{Contents}
+
+		\centering
+		\begin{columns}
+			\begin{column}{0.75\textwidth}
+				\tableofcontents[currentsection]
+			\end{column}
+			\begin{column}{0.15\textwidth}
+				% Use this for anything you want to display alongside the contents
+			\end{column}
+		\end{columns}
+	\end{frame}
+}
+
+\section{Introduction}
+\subsection{Thesis Statement}
+\begin{frame}
+	\frametitle{Thesis Statement}
+	\textbf{A user-friendly and maintainable general code testing tool is important to streamline the administration of introductory programming courses}
+	\\~\\
+		\pause
+	We will:
+		\pause
+	\begin{enumerate}
+		\item Develop an extensible and easy to use software package which parses and runs pre-written tests on submitted code
+			\pause
+		\item Implement development procedures that minimise both current and future technical debt
+			\pause
+		\item Remediate known flaws in the existing autotest package
+			\pause
+		\item Maintain backwards compatibility with legacy tests written for the existing autotest package
+			\pause
+		\item Perform proving and performance tests on the new software package
+			\pause
+		\item Deprecate and replace the existing autotest used for introductory programming courses at UNSW CSE
+	\end{enumerate}
+\end{frame}
+
+\subsection{Plan}
+\begin{frame}
+	\frametitle{Schedule}
+	The original plan was set to the following:
+	\begin{enumerate}
+	\item Thesis B:
+	\begin{itemize}
+		\item Implement Core Main Module
+			\pause
+		\item Implement Core Testcase Parser Module
+			\pause
+		\item Implement Core Testcase Runner Module
+			\pause
+		\item Run correctness and performance testing on Parser and Runner
+			\pause
+	\end{itemize}
+	\item Thesis C:
+	\begin{itemize}
+		\item Implement Core Testcase Program Correctness Module
+			\pause
+		\item Implement any extensions that have been deemed necessary
+			\pause
+		\item Run correctness and performance testing on complete package and make final adjustments
+	\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Schedule}
+	The original plan was set to the following:
+	\begin{enumerate}
+		\item Thesis B:
+		\begin{itemize}
+			\item Implement Core Main Module
+			\pause
+			\item Implement Core Testcase Parser Module
+			\pause
+			\item Implement Core Testcase Runner Module
+			\pause
+			\item Run correctness and performance testing on Parser and Runner
+			\pause
+		\end{itemize}
+		\item Thesis C:
+		\begin{itemize}
+			\item Implement Core Testcase Program Correctness Module
+			\pause
+			\item Implement any extensions that have been deemed necessary
+			\pause
+			\item Run correctness and performance testing on complete package and make final adjustments
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+\end{document}

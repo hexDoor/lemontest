@@ -8,9 +8,8 @@ import json
 import traceback
 from collections import OrderedDict
 
-from util.util import die
-
-import legacy_parser.adapter as legacy_parser
+import legacy_parser.adapter as Parser
+import test_runner.test_runner as TestRunner
 
 # interrupt handler
 # TODO: spin down any subprocesses if interrupted
@@ -20,12 +19,15 @@ def interrupt_handler(signum, frame):
 
 def execute_autotest():
     # setup parser
-    parser = legacy_parser.Parser()
+    parser = Parser.Parser()
     # execute parser execution
     parser.parse_arguments()
     parser.parse_tests()
     parser.post_parse_misc()
 
+    """
+    DEBUG
+    """
     # check shit is working
     args = parser.args()
     tests = parser.tests()
@@ -43,8 +45,16 @@ def execute_autotest():
             )
         )
         return 0
+    # got here well enough so far
+
+    """
+    Setup test runner
+    """
+    test_runner = TestRunner.TestRunner()
 
     exit(1)
+
+    ### need to properly set up the test
     # copy files to temp for autotest execustions
     copy_files_to_temp_directory(args, parameters)
 
