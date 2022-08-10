@@ -4,12 +4,10 @@ import os
 import sys
 import re
 import signal
-import json
 import traceback
-from collections import OrderedDict
 
 import legacy_parser.adapter as Parser
-import test_runner.test_runner as TestRunner
+import test_scheduler.test_scheduler as TestScheduler
 
 # interrupt handler
 # TODO: spin down any subprocesses if interrupted
@@ -25,48 +23,19 @@ def execute_autotest():
     parser.parse_tests()
     parser.post_parse_misc()
 
-    """
-    DEBUG
-    """
-    # check shit is working
-    args = parser.args()
-    tests = parser.tests()
-    if args.print_test_names:
-        test_groups = OrderedDict()
-        for test in tests.values():
-            files = tuple(sorted(test.files))
-            test_groups.setdefault(files, []).append(test.label)
-        print(
-            json.dumps(
-                [
-                    {"files": files, "labels": labels}
-                    for (files, labels) in test_groups.items()
-                ]
-            )
-        )
-        return 0
-    # got here well enough so far
+    # setup test scheduler
+    test_scheduler = TestScheduler.TestScheduler()
+    test_scheduler.setup(parser.args())
+    # execute tests
+    test_scheduler.schedule(parser.tests())
+    # await execution finish and cleanup
+    test_scheduler.cleanup()
 
-    """
-    Setup test runner
-    """
-    test_runner = TestRunner.TestRunner()
+    # TODO: send tests to output processor
+    # TODO: post autotest cleanup/misc actions
+    
+    return 0
 
-    exit(1)
-
-    ### need to properly set up the test
-    # copy files to temp for autotest execustions
-    copy_files_to_temp_directory(args, parameters)
-
-    # generate expected outputs if set
-    if args.generate_expected_output != "no":
-        return generate_expected_output(tests, args)
-
-    # execute autotests
-    if parameters.get("upload_url", ""):
-        return run_tests_and_upload_results(tests, parameters, args)
-    else:
-        return run_tests(tests, parameters, args)
 
 # setup environment and config for lemontest
 def main():
@@ -93,6 +62,7 @@ def main():
 
         #print("\n" + REPO_INFORMATION)
         sys.exit(2)
+
 
 if __name__ == "__main__":
     main()

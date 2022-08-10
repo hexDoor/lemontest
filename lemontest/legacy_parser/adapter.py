@@ -1,11 +1,11 @@
-from interfaces.parser import ParserInterface
+from classes.parser import AbstractParser
 import legacy_parser.command_line_arguments as cmdlineargs
 import legacy_parser.parse_test_specification as parsetestspec
 
 # TODO: Forced Legacy Design Break (thanks legacy parser)
 from legacy_test_definition.test import Test
 
-class Parser(ParserInterface):
+class Parser(AbstractParser):
     # standard vars
     _args = None
     _tests = None

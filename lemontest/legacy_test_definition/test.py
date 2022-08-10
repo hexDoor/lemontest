@@ -5,10 +5,10 @@ import shlex
 from termcolor import colored as termcolor_colored
 from collections import defaultdict
 
-from interfaces.test import TestInterface
+from classes.test import AbstractTest
 from legacy_test_definition.subprocess_with_resource_limits import run
 
-class Test(TestInterface):
+class Test(AbstractTest):
     def __init__(self, autotest_dir, **parameters):
         debug = parameters["debug"]
         self.autotest_dir = autotest_dir
@@ -80,74 +80,9 @@ class Test(TestInterface):
     def postprocess(self):
         pass
 
+    # helper functions
     def set_environ(self):
         test_environ = self.parameters["environment"]
         if os.environ != test_environ:
             os.environ.clear()
             os.environ.update(test_environ)
-
-def sanitize_string(
-    unsanitized_string,
-    leave_tabs=False,
-    leave_colorization=False,
-    max_lines_shown=32,
-    max_line_length_shown=1024,
-    # pylint: disable=dangerous-default-value
-    line_color=defaultdict(lambda: ""),
-    **parameters,
-):
-    max_lines_shown = int(max_lines_shown)
-    max_line_length_shown = int(max_line_length_shown)
-    lines = unsanitized_string.splitlines()
-    append_repeat_message = False
-    if len(lines) >= max_lines_shown:
-        last_line_index = len(lines) - 1
-        last_line = lines[last_line_index]
-        repeats = 1
-        while (
-            repeats <= last_line_index and lines[last_line_index - repeats] == last_line
-        ):
-            repeats += 1
-        if repeats > max_lines_shown / 2 and len(lines) - repeats < max_lines_shown - 1:
-            append_repeat_message = True
-            lines = lines[0 : last_line_index + 2 - repeats]
-
-    sanitized_lines = []
-    for (line_number, line) in enumerate(lines):
-        if line_number >= max_lines_shown:
-            sanitized_lines.append("...\n")
-            break
-        if len(line) > max_line_length_shown:
-            line = line[0:max_line_length_shown] + " ..."
-        line = line.encode("unicode_escape").decode("ascii")
-        if leave_colorization:
-            line = line.replace(r"\x1b", "\x1b")
-        if leave_tabs:
-            line = line.replace(r"\t", "\t")
-            line = line.replace(r"\\", "\\")
-        color = line_color[line_number]
-        if color:
-            line = termcolor_colored(line, color)
-        sanitized_lines.append(line)
-    if append_repeat_message:
-        repeat_message = f"<last line repeated {repeats} times>"
-        if parameters["colorize_output"]:
-            repeat_message = termcolor_colored(repeat_message, "red")
-        sanitized_lines.append(repeat_message)
-    return "\n".join(sanitized_lines) + "\n"
-
-def echo_command_for_string(test_input):
-    options = []
-    if test_input and test_input[-1] == "\n":
-        test_input = test_input[:-1]
-    else:
-        options += ["-n"]
-    echo_string = shlex.quote(test_input)
-    if "\n" in test_input[:-1]:
-        echo_string = echo_string.replace("\\", r"\\")
-        options += ["-e"]
-    echo_string = echo_string.replace("\n", r"\n")
-    command = "echo "
-    if options:
-        command += " ".join(options) + " "
-    return command + echo_string

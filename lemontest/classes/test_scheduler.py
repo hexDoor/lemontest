@@ -1,12 +1,12 @@
-class RunnerInterface:
+class AbstractScheduler:
     """
-    Interface for test runner
+    Abstract test scheduler class
     """
 
 
     def __init__(self):
         """
-        Initialise a test runner
+        Initialise a test scheduler
 
         Returns: None
         """
@@ -14,7 +14,7 @@ class RunnerInterface:
 
     def __str__(self):
         """
-        Returns a string representation on test runner status
+        Returns a string representation on test scheduler status
 
         Returns: str
         """
@@ -22,7 +22,7 @@ class RunnerInterface:
 
     def setup(self):
         """
-        Perform any necessary setup of the testcase runner
+        Perform any necessary setup of the testcase scheduler
         Should return whether setup was successful
 
         Returns: bool
@@ -42,7 +42,7 @@ class RunnerInterface:
 
     def cleanup(self):
         """
-        Perform any necessary cleanup of the testcase runner
+        Perform any necessary cleanup of the testcase scheduler
         Should return whether cleanup was successful
 
         Returns: bool

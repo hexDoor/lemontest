@@ -1,8 +1,6 @@
-class TestInterface:
-    """
-    Interface for tests
-    """
+from classes.test import AbstractTest
 
+class Test(AbstractTest):
 
     def __init__(self):
         """
