@@ -1,2 +1,0 @@
-
-0 command=./a 0 expected_stdout="hello\n"

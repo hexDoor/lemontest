@@ -1,8 +1,0 @@
-program=hello.sh
-
-0 expected_stdout="hello\n"
-
-checkers=checker.sh
-pre_compile_command="pre_compile.sh *"
-
-1 expected_stdout="hello\n"

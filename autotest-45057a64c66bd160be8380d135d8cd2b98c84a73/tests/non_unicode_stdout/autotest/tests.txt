@@ -1,4 +1,0 @@
-files="not_unicode_stdout.c"
-program="not_unicode_stdout"
-
-test_stdout  expected_stdout=b"\xff\xff" unicode_stdout=False
