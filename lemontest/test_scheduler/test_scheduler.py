@@ -1,4 +1,5 @@
-from classes.test_scheduler import AbstractScheduler
+from classes.test_worker import AbstractScheduler
+
 
 class TestScheduler(AbstractScheduler):
     def __init__(self):

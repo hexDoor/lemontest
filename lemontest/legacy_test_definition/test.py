@@ -64,6 +64,7 @@ class Test(AbstractTest):
             # ugly work-around for
             # weird termination with non-zero exit status seen on some CSE servers
             # ignore this execution and try again
+            # TODO: try testing if we can remove this?
             time.sleep(1)
 
         if self.parameters["unicode_stdout"]:

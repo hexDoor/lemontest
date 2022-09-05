@@ -12,6 +12,7 @@ import test_scheduler.test_scheduler as TestScheduler
 # interrupt handler
 # TODO: spin down any subprocesses if interrupted
 def interrupt_handler(signum, frame):
+    kill_all()
     os._exit(2)
 
 
@@ -60,9 +61,12 @@ def main():
         if debug:
             traceback.print_exc(file=sys.stderr)
 
-        #print("\n" + REPO_INFORMATION)
         sys.exit(2)
 
+
+# kill everything
+def kill_all():
+    pass
 
 if __name__ == "__main__":
     main()

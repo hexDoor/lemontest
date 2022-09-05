@@ -1174,6 +1174,64 @@ PARAMETER_LIST += [
 ]
 
 
+PARAMETER_LIST += [
+    "### Parameters controlling autotest scheduler and worker",
+    Parameter(
+        "worker_count",
+        default=3,
+        description="""
+            Number of autotest workers.
+            Effectively how many unshare container processes to run autotests on. (multi-processing)
+            Ideally, having more should improve performance depending on the core count + other tasks running.
+        """
+    ),
+    Parameter(
+        "worker_isolate_network",
+        default=True,
+        description="""
+           If running in a **`worker`**, isolate network.
+        """,
+    ),
+    Parameter(
+        "worker_read_only_mount",
+        default=[],
+        description="""
+            Pathnames of files or directories mounted read-only in the worker
+            in addition to files or directories specified by **`worker_read_only_mount_base`**.
+            A tuple can be to specify a diferent mount point in the worker.
+        """,
+    ),
+    Parameter(
+        "worker_read_write_mount",
+        default=[],
+        description="""
+            Pathnames of files or directories visible mounted read-write in the worker
+            in addition to files or directories specified by **`worker_read_write_mount_base`**.
+            A tuple can be to specify a different mount point in the worker
+            `/tmp`, `/proc`, `/sys` and `/dev` are always mounted directly read-write in the worker
+        """,
+    ),
+    Parameter(
+        "worker_read_only_mount_base",
+        default=[
+            "/bin",
+            "/etc",
+            "/lib",
+            "/lib32",
+            "/lib64",
+            "/libx32",
+            "/sbin",
+            "/usr",
+        ],
+        description="""
+            Pathnames of files or directories mounted read-only in the worker
+            The parameter **`worker_read_only_mount`** should be used to add extra pathnames.<bt>
+            This parameter need only be set to stop one of these pathnames being mounted.
+        """,
+    )
+]
+
+
 PARAMETERS = collections.OrderedDict(
     (bv.name, bv) for bv in PARAMETER_LIST if isinstance(bv, Parameter)
 )

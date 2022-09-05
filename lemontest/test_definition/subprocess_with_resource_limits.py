@@ -4,8 +4,7 @@
 # This code provides the equivalent of subprocess.run
 # with limits on CPU time and other resources.
 #
-# It was originally written for Python 2
-# Recent versions of Python 3 may allow this code to be rewrritten and much simplified
+# This is an updated version of the original subprocess resource limit library by Andrew Taylor
 #
 
 import asyncio, locale, re, os, resource, signal, subprocess, sys, tempfile, threading
@@ -27,8 +26,7 @@ def run(command, **parameters):
     return output
 
 
-@asyncio.coroutine
-def run_coroutine(
+async def run_coroutine(
     loop,
     command,
     stdin=None,
@@ -107,7 +105,7 @@ def run_coroutine(
         stdin=stdin_stream,
     )
 
-    transport, protocol = yield from process
+    transport, protocol = await process
     errors = []
     if max_real_seconds:
 
@@ -132,7 +130,7 @@ def run_coroutine(
         timer.start()
     # Wait for the subprocess exit using the process_exited() method
     # of the protocol
-    yield from exit_future
+    await exit_future
     if max_real_seconds:
         timer.cancel()
     transport.close()
@@ -210,5 +208,4 @@ class SubprocessProtocol(asyncio.SubprocessProtocol):
 
 
 if __name__ == "__main__":
-    #    print(run(sys.argv[1], inpuy=" ".join(sys.argv[2:]), max_cpu=1, debug=2))
     print(run(sys.argv[1:], max_cpu_seconds=10, max_real_seconds=30, debug=0))
