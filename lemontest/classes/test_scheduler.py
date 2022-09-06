@@ -20,16 +20,6 @@ class AbstractScheduler:
         """
 
 
-    def setup(self):
-        """
-        Perform any necessary setup of the testcase scheduler
-        Should return whether setup was successful
-
-        Returns: bool
-        """
-        pass
-
-
     def schedule(self):
         """
         Schedule a test to be executed

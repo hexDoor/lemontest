@@ -20,7 +20,7 @@ class AbstractWorker:
         """
 
 
-    def setup(self, **paramaters):
+    def setup(self):
         """
         Perform any necessary setup of the testcase worker
         Should return whether setup was successful
@@ -32,7 +32,8 @@ class AbstractWorker:
 
     def support_execute(self, cmd):
         """
-        Execute a support shell command
+        Execute a support shell command as a list or single binary
+        eg. ["ls", "-l"]
         Should return exit code of the support shell command
 
         Returns: int

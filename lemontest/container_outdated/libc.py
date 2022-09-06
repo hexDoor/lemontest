@@ -2,6 +2,20 @@
 # inspired by furnace libc library https://github.com/balabit/furnace
 #
 
+UNSHARE_COMMAND = [
+    "/usr/bin/unshare",
+    "--cgroup",
+    "--fork",
+    "--ipc",
+    "--map-root-user",
+    "--mount",
+    "--net",
+    "--pid",
+    "--user",
+    "--time",
+    "--uts",
+]
+
 import ctypes
 from pathlib import Path
 
@@ -16,7 +30,7 @@ CLONE_NEWIPC = 0x08000000
 CLONE_NEWPID = 0x20000000
 CLONE_NEWNET = 0x40000000
 
-def unshare(flags):
+def unshare(flags: int):
     if libc.unshare(flags) != 0:
         raise OSError(ctypes.get_errno(), "unshare failed")
 

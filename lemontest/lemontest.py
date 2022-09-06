@@ -25,9 +25,8 @@ def execute_autotest():
     parser.post_parse_misc()
 
     # setup test scheduler
-    test_scheduler = TestScheduler.TestScheduler()
-    test_scheduler.setup(parser.args())
-    # execute tests
+    test_scheduler = TestScheduler.TestScheduler(parser.args())
+    # schedule execute tests
     test_scheduler.schedule(parser.tests())
     # await execution finish and cleanup
     test_scheduler.cleanup()

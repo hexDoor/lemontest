@@ -1,20 +1,29 @@
 from classes.test_worker import AbstractWorker
+from functools import reduce
 from pathlib import Path
 
 import tempfile
 import shutil
 import sys
 import os
-import time
+import pwd
+import subprocess
+
+from container_outdated import container
 
 # This should be executed as a new process via multiprocessing (fork)
+# the os.fork() call will allow us to work with unshare
+# At the current time, there is no way to communicate with
 class TestWorker(AbstractWorker):
-    parameters = None
     worker_root = None
 
     def __init__(self, **parameters):
-        self.parameters = parameters
+        # containerise current process
         try:
+            # isolate current process with unshare
+            container.unshare_process(parameters["worker_isolate_network"], parameters["debug"])
+
+            # setup and mount fakeroot
             self.worker_root = Path(tempfile.mkdtemp())
         except Exception as err:
             # TODO: figure out a way to tell the pool manager that this is fucked
@@ -29,20 +38,16 @@ class TestWorker(AbstractWorker):
         }
         return str(info)
 
-    def setup(self):
-        # spawn container
+    def setup(self, **parameters):
         pass
 
     def support_execute(self, cmd):
-        pass
+        return subprocess.run(cmd).returncode
 
     def execute(self, test):
-        # TODO: execute the test
-        time.sleep(1)
         pass
 
     def cleanup(self):
-        # delete container
         # cleanup temp root
         if self.worker_root:
             shutil.rmtree(self.worker_root)
@@ -51,9 +56,10 @@ class TestWorker(AbstractWorker):
 def pool_worker_test(worker_id):
     worker = TestWorker(worker_isolate_network=True, debug=False)
     worker.setup()
+    #worker.support_execute([container.TINI_PATH, "--", "pwd"])
     #worker.support_execute(["ls", "-l"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/setgroups"])
-    worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id}"])
+    worker.support_execute([container.TINI_PATH, "--", "echo", f"pid: {os.getpid()} - worker: {worker_id}"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/uid_map"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/gid_map"])
     #worker.support_execute(["getpcaps", f"{os.getpid()}"])
@@ -67,4 +73,10 @@ def pool_worker_test(worker_id):
 
 
 if __name__ == '__main__':
-    pool_worker_test(1)
+    from multiprocessing import Pool
+    pool = Pool(4, maxtasksperchild=1)
+
+    pool.map(pool_worker_test, [1,2,3,4,5,6,7,8])
+    pool.terminate()
+
+    pool.close()
