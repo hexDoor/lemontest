@@ -1,4 +1,5 @@
 from classes.test_worker import AbstractWorker
+from classes.test import AbstractTest
 from pathlib import Path
 
 import tempfile
@@ -30,15 +31,27 @@ class TestWorker(AbstractWorker):
         return str(info)
 
     def setup(self):
-        # spawn container
+        # do nothing as not needed but here to follow design
         pass
 
-    def support_execute(self, cmd):
-        pass
+    def execute(self, test: AbstractTest):
+        # FIXME: spawn container
 
-    def execute(self, test):
-        # TODO: execute the test
+        # how do i avoid having to rerun the file under bwrap?
+        # could've just used unshare then
+        # is there a way to create a container and run
+
+        # perhaps fork this process here and go with my own sandboxing
+        # with unshare calls
+
+        # TODO: execute test
+        test.preprocess()
+        #test.run_test()
+        #print("running test")
+        #print(test)
         time.sleep(1)
+        test.postprocess()
+
         pass
 
     def cleanup(self):
@@ -53,7 +66,7 @@ def pool_worker_test(worker_id):
     worker.setup()
     #worker.support_execute(["ls", "-l"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/setgroups"])
-    worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id}"])
+    #worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id}"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/uid_map"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/gid_map"])
     #worker.support_execute(["getpcaps", f"{os.getpid()}"])

@@ -43,6 +43,7 @@ class Parser(AbstractParser):
             initial_tests=self._args.initial_tests,
             debug=self._args.debug,
         )
+        # god knows why it's done like this but it's necessary for normalisation
         self._tests = dict(
             (label, Test(self._args.autotest_directory, **t))
             for (label, t) in tests_as_dicts.items()
@@ -50,3 +51,5 @@ class Parser(AbstractParser):
 
     def post_parse_misc(self):
         cmdlineargs.normalize_arguments(self._args, self._tests)
+        # make the tests actually usable (convert dict to list)
+        self._tests = [test for test in self._tests.values()]

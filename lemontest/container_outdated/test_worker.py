@@ -16,6 +16,7 @@ from container_outdated import container
 # At the current time, there is no way to communicate with
 class TestWorker(AbstractWorker):
     worker_root = None
+    pid1_manager = None
 
     def __init__(self, **parameters):
         # containerise current process
@@ -39,6 +40,7 @@ class TestWorker(AbstractWorker):
         return str(info)
 
     def setup(self, **parameters):
+        self.pid1_manager = 
         pass
 
     def support_execute(self, cmd):
@@ -56,10 +58,13 @@ class TestWorker(AbstractWorker):
 def pool_worker_test(worker_id):
     worker = TestWorker(worker_isolate_network=True, debug=False)
     worker.setup()
+    #worker.support_execute(["/proc/self/exe"])
     #worker.support_execute([container.TINI_PATH, "--", "pwd"])
     #worker.support_execute(["ls", "-l"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/setgroups"])
-    worker.support_execute([container.TINI_PATH, "--", "echo", f"pid: {os.getpid()} - worker: {worker_id}"])
+    #worker.support_execute(["echo $$"])
+    worker.support_execute([container.TINI_PATH, "-p", "SIGTERM", "--", "sleep", "5"])
+    worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id} - subprocess pid: $$"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/uid_map"])
     #worker.support_execute(["cat", f"/proc/{os.getpid()}/gid_map"])
     #worker.support_execute(["getpcaps", f"{os.getpid()}"])
@@ -76,7 +81,8 @@ if __name__ == '__main__':
     from multiprocessing import Pool
     pool = Pool(4, maxtasksperchild=1)
 
-    pool.map(pool_worker_test, [1,2,3,4,5,6,7,8])
+    #pool.map(pool_worker_test, [1,2,3,4,5,6,7,8])
+    pool.map(pool_worker_test, [1])
     pool.terminate()
 
     pool.close()

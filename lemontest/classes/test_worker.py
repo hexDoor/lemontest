@@ -29,15 +29,18 @@ class AbstractWorker:
         """
         pass
 
-
+    # disable since worker should not be able to directly communicate
+    # instructions to container during runtime
+    """
     def support_execute(self, cmd):
-        """
+        '''
         Execute a support shell command as a list or single binary
         eg. ["ls", "-l"]
         Should return exit code of the support shell command
 
         Returns: int
-        """
+        '''
+    """
 
 
     def execute(self, test):

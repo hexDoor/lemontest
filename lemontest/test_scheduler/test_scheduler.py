@@ -20,7 +20,7 @@ class TestScheduler(AbstractScheduler):
         except Exception as err:
             # cleanup worker pool
             if self.worker_pool:
-                self.worker_pool.terminate()
+                self.worker_pool.terminate() # send SIGTERM to worker processes
             print(err)
             sys.exit(1)
 
@@ -28,7 +28,7 @@ class TestScheduler(AbstractScheduler):
         pass
 
     def schedule(self, tests):
-        tests = [(test, parameters) for test in tests]
+        tests = [(test, self.parameters) for test in tests]
         # schedule tests for execution and show progress
         test_res = list(tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), desc=f"Running {len(tests)} tests:", unit=" tests"))
 

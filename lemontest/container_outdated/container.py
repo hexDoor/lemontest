@@ -11,6 +11,8 @@
 import os
 import pwd
 
+from functools import reduce
+
 from .libc import unshare, CLONE_NEWNS, CLONE_NEWCGROUP, CLONE_NEWUTS, CLONE_NEWIPC, CLONE_NEWPID, CLONE_NEWUSER, CLONE_NEWNET
 
 
@@ -112,10 +114,10 @@ def unshare_process(isolate_networking: bool, debug: bool):
     unshare_user(debug)
 
     # unshare
-    #unshare_flags = [CLONE_NEWCGROUP, CLONE_NEWUTS, CLONE_NEWIPC, CLONE_NEWPID]
-    #if isolate_networking:
-    #    unshare_flags.append(CLONE_NEWNET)
-    #unshare(reduce(lambda x, y: x|y, unshare_flags))
+    unshare_flags = [CLONE_NEWCGROUP, CLONE_NEWUTS, CLONE_NEWIPC, CLONE_NEWPID]
+    if isolate_networking:
+        unshare_flags.append(CLONE_NEWNET)
+    unshare(reduce(lambda x, y: x|y, unshare_flags))
 
     # if i unshare PID namespace, the next subprocess must be the PID1 manager (everything needs to fork/execute off this)
     # perhaps run this when actually executing the test such that when it's done, it nicely exits?

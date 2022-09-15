@@ -53,7 +53,7 @@ class AbstractParser:
 
     def params(self):
         """
-        Gets parsed paramaters
+        Gets parsed parameters
 
         Returns: Dict(paramName, value)
         """
