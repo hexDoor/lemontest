@@ -40,11 +40,12 @@ class TestWorker(AbstractWorker):
         return str(info)
 
     def setup(self, **parameters):
-        self.pid1_manager = 
         pass
 
     def support_execute(self, cmd):
-        return subprocess.run(cmd).returncode
+        print(os.getpid())
+        return subprocess.run(cmd, shell=True).returncode
+
 
     def execute(self, test):
         pass
@@ -58,22 +59,26 @@ class TestWorker(AbstractWorker):
 def pool_worker_test(worker_id):
     worker = TestWorker(worker_isolate_network=True, debug=False)
     worker.setup()
-    #worker.support_execute(["/proc/self/exe"])
-    #worker.support_execute([container.TINI_PATH, "--", "pwd"])
-    #worker.support_execute(["ls", "-l"])
-    #worker.support_execute(["cat", f"/proc/{os.getpid()}/setgroups"])
-    #worker.support_execute(["echo $$"])
-    worker.support_execute([container.TINI_PATH, "-p", "SIGTERM", "--", "sleep", "5"])
-    worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id} - subprocess pid: $$"])
-    #worker.support_execute(["cat", f"/proc/{os.getpid()}/uid_map"])
-    #worker.support_execute(["cat", f"/proc/{os.getpid()}/gid_map"])
-    #worker.support_execute(["getpcaps", f"{os.getpid()}"])
-    #worker.support_execute("id")
-    #worker.support_execute(["capsh", "--print"])
-    #worker.support_execute(["cat", "/etc/shadow"])
-    #worker.support_execute(["cat", "/etc/subgid"])
-    #worker.support_execute(["cat", f"/proc/{os.getpid()}/status"])
-    #worker.support_execute(["cat", "README.md"])
+    pid = os.fork()
+    if pid == 0:
+        #worker.support_execute(["/proc/self/exe"])
+        #worker.support_execute([container.TINI_PATH, "--", "pwd"])
+        #worker.support_execute(["ls", "-l"])
+        #worker.support_execute(["cat", f"/proc/{os.getpid()}/setgroups"])
+        #worker.support_execute(["echo $$"])
+        #worker.support_execute(["echo", f"pid: {os.getpid()} - worker: {worker_id} - subprocess pid: $$"])
+        worker.support_execute([f"echo 'pid: {os.getpid()} - worker: {worker_id} - subprocess pid' $$"])
+        #worker.support_execute(["cat", f"/proc/{os.getpid()}/uid_map"])
+        #worker.support_execute(["cat", f"/proc/{os.getpid()}/gid_map"])
+        #worker.support_execute(["getpcaps", f"{os.getpid()}"])
+        worker.support_execute("id")
+        #worker.support_execute(["capsh", "--print"])
+        #worker.support_execute(["cat", "/etc/shadow"])
+        #worker.support_execute(["cat", "/etc/subgid"])
+        #worker.support_execute(["cat", f"/proc/{os.getpid()}/status"])
+        #worker.support_execute(["cat", "README.md"])
+    else:
+        _, status = os.waitpid(pid, 0)
     worker.cleanup()
 
 

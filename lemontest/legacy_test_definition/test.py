@@ -43,7 +43,8 @@ class Test(AbstractTest):
 
     # TODO: add in legacy preprocessing
     def preprocess(self):
-        print(self.command)
+        #print(self.command)
+        pass
 
     def run_test(self, compile_command=""):
         if self.debug > 1:

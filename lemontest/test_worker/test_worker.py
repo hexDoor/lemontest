@@ -8,6 +8,8 @@ import sys
 import os
 import time
 
+from .sandbox.sandbox import Sandbox
+
 # This should be executed as a new process via multiprocessing (fork)
 class TestWorker(AbstractWorker):
     parameters = None
@@ -44,7 +46,11 @@ class TestWorker(AbstractWorker):
         # perhaps fork this process here and go with my own sandboxing
         # with unshare calls
 
-        # TODO: execute test
+        # spawn sandbox runtime
+        self.sandbox = Sandbox(self.worker_root, self.parameters)
+        
+
+        # TODO: execute test in sandbox
         test.preprocess()
         #test.run_test()
         #print("running test")
