@@ -9,6 +9,7 @@ from tempfile import mkdtemp
 import uuid
 import os
 import subprocess
+import time
 
 from .util import libc, pid1
 # A tuple can be to specify a different mount point in the

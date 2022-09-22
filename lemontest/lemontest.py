@@ -47,8 +47,8 @@ def main():
 
     # load interrupt handler 
     # how do we approach this with multiprocessing pools? (possibly a seperate interrupt handler to kill resources?)
-    if not debug:
-        signal.signal(signal.SIGINT, interrupt_handler)
+    #if not debug:
+        #signal.signal(signal.SIGINT, interrupt_handler)
 
     # execute autotests
     try:
@@ -61,7 +61,6 @@ def main():
         
         if debug:
             traceback.print_exc(file=sys.stderr)
-
         sys.exit(2)
 
 

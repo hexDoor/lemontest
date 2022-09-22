@@ -16,6 +16,7 @@ class PID1:
         # but this way we signal to the kernel that we will not call waitpid
         # and get rid of zombies automatically
         signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+        pass
 
 # inspired by https://github.com/PexMor/unshare and Andrew Taylor's experiments
 # also inspired by my friend ralismark

@@ -4,7 +4,8 @@ from pathlib import Path
 
 import tempfile
 import shutil
-import sys
+import os
+import time
 
 from .sandbox.sandbox import Sandbox
 
@@ -33,6 +34,7 @@ class TestWorker(AbstractWorker):
         with Sandbox(self.worker_root, **self.parameters) as sb:
             # TODO: execute test in sandbox
             test.preprocess()
+            time.sleep(2)
             test.label = test.label + "kek"
             #print(os.getpid())
             #subprocess.run("id")
