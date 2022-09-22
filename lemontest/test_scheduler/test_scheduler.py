@@ -7,6 +7,7 @@ from multiprocessing import Pool
 
 import sys
 import tqdm
+import os
 
 class TestScheduler(AbstractScheduler):
     parameters = None
@@ -29,6 +30,9 @@ class TestScheduler(AbstractScheduler):
 
     def schedule(self, tests):
         tests = [(test, self.parameters) for test in tests]
+        print("HELP1")
+        for test, _ in tests:
+            print(test)
         # schedule tests for execution and show progress
         test_res = list(tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), desc=f"Running {len(tests)} tests:", unit=" tests"))
 
@@ -38,8 +42,11 @@ class TestScheduler(AbstractScheduler):
 
         # reset worker_pool in case cleanup gets triggered by signal
         self.worker_pool = None
+        print("HELP2")
+        for test in test_res:
+            print(test)
 
-        # return resulsts
+        # return results
         return test_res
 
     def cleanup(self):
@@ -58,4 +65,4 @@ def test_worker(test, parameters):
 if __name__ == '__main__':
     parameters = {'worker_count': 3, 'debug': True}
     test_scheduler = TestScheduler(**parameters)
-    test_scheduler.schedule([1,2,3,4,5])
+    test_scheduler.schedule([1,2,3,4,5]) # change to tests

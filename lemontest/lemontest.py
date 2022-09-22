@@ -34,6 +34,7 @@ def execute_autotest():
     # TODO: send tests to output processor
     # TODO: post autotest cleanup/misc actions
     print(processed_tests)
+    print()
 
     return 0
 

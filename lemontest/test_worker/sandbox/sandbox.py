@@ -3,14 +3,14 @@
 # some ideas inspired by https://github.com/shubham1172/pocket
 # container config and PID1 inspired by https://github.com/balabit/furnace
 #
-from functools import reduce
 from pathlib import Path
-from collections import namedtuple
+from tempfile import mkdtemp
 
 import uuid
 import os
+import subprocess
 
-from .util import libc, fs
+from .util import libc, pid1
 # A tuple can be to specify a different mount point in the
 # sandbox 
 
@@ -27,7 +27,7 @@ class Sandbox:
         self.debug = parameters["debug"]
         self.root_dir = root_dir.resolve()
         self.sandbox_id = str(uuid.uuid4())
-        self.isolate_networking = parameters["worker_isolate_network"]
+        self.isolate_networking = parameters.get("worker_isolate_network", True)
 
         # load mountables
         self.ro_mounts = parameters.get("sandbox_read_only_mount_base", [])
@@ -40,7 +40,7 @@ class Sandbox:
             print(f"creating a new sandbox ({self.sandbox_id})")
 
         # TODO: setup system for proper BindMounts
-        self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, [])
+        self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, [], self.debug)
 
         # FIXME: rely on delegated cgroups v2 when support matures
         # with new python management libraries
@@ -51,100 +51,59 @@ class Sandbox:
         # see: https://manpages.ubuntu.com/manpages/bionic/man1/systemd-run.1.html
 
     def __enter__(self):
-        pass
+        self.pid1_manager.start() 
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_value, traceback):
+        if traceback:
+            print("fuck")
         pass
 
 
 class PID1Manager:
     root_dir = None
+    isolate_networking = None
+    bind_mounts = None
+    debug = None
     pid = None
+    pid1_class = None
 
-    def __init__(self, root_dir, isolate_networking, bind_mounts):
-        pass
+    def __init__(self, root_dir, isolate_networking, bind_mounts, debug):
+        self.root_dir = root_dir
+        self.isolate_networking = isolate_networking
+        self.bind_mounts = bind_mounts
+        self.debug = debug
 
     def start(self):
+        # unshare user namepsace here
+        # can only unshare NEWPID once root user has been established
+        # through namespaces
+        # unfortunately, this needs to be here
+        pid1.unshare_user(self.debug)
+
         # unshare the PID namespace at this point such that we can initialise a
         # pure-python PID 1
         libc.unshare(libc.CLONE_NEWPID)
 
-        # fork child process to be PID 1
+        # fork python interpreter into child process to be PID 1
         self.pid = os.fork()
         
         # child process (PID 1)
         if self.pid == 0:
-            pass
-        # parent process (waits for completion)
+            # instantiate and execute PID1 setup as everything
+            # from now on spawns from this process
+            self.pid1_class = pid1.PID1(self.isolate_networking, self.debug)
+        # wait then kill parent process which doesn't have pid 1
+        # child process is PID1 so we're safe as all control gets inherited back
         else:
-            _, status = os.waitpid(self.pid, 0)
-        
-
-
-def unshare_user(debug: bool):
-    # uid & gid mapping
-    uid = os.getuid()
-    gid = os.getgid()
-
-    uidmapfile = f"/proc/self/uid_map"
-    gidmapfile = f"/proc/self/gid_map"
-    setgroupsfile = f"/proc/self/setgroups"
-    uidmap = f"0 {uid} 1"
-    gidmap = f"0 {gid} 1"
-
-    if debug:
-        print(f"test_worker - unshare_user: uid: {os.getuid()} - gid: {os.getgid()}")
-
-    # unshare user namespace and mount namespace
-    libc.unshare(libc.CLONE_NEWUSER | libc.CLONE_NEWNS)
-
-    # write uid & gid mapping
-    if debug:
-        print(f"test_worker - unshare_user: writing uidmap = '{uidmap}' => '{uidmapfile}'")
-        print(f"test_worker - unshare_user: writing setgroups = 'deny' => '{setgroupsfile}'")
-        print(f"test_worker - unshare_user: writing gidmap = '{gidmap}' => '{gidmapfile}'")
-
-    # user_namespaces(7)
-    # The data written to uid_map (gid_map) must consist of a single line that
-    # maps the writing process's effective user ID (group ID) in the parent
-    # user namespace to a user ID (group ID) in the user namespace.
-    with open(uidmapfile, "w") as uidmap_f:
-        uidmap_f.write(uidmap)
-
-    # user_namespaces(7)
-    # In the case of gid_map, use of the setgroups(2) system call must first
-    # be denied by writing "deny" to the /proc/[pid]/setgroups file (see
-    # below) before writing to gid_map.
-    with open(setgroupsfile, "w") as setgroups_f:
-        setgroups_f.write("deny")    
-    with open(gidmapfile, "w") as gidmap_f:
-        gidmap_f.write(gidmap)
-
-    if debug:
-        print(f"test_worker - unshare_user: new uid = {os.getuid()} | new gid = {os.getgid()}")
-
-
-# inspired by https://github.com/PexMor/unshare and Andrew Taylor's experiments
-# also inspired by my friend ralismark
-# https://github.com/ralismark/nix-appimage/blob/main/apprun.c
-# because unshare(2) can't automatically map the root user :(
-def unshare_process(isolate_networking: bool, debug: bool):
-    if debug:
-        print("test_worker - unshare_process: setting up unshare")
-    unshare_user(debug)
-
-    # unshare
-    unshare_flags = [libc.CLONE_NEWCGROUP, libc.CLONE_NEWUTS, libc.CLONE_NEWIPC, libc.CLONE_NEWPID]
-    if isolate_networking:
-        unshare_flags.append(libc.CLONE_NEWNET)
-    libc.unshare(reduce(lambda x, y: x|y, unshare_flags))
-
-    # if i unshare PID namespace, the next subprocess must be the PID1 manager (everything needs to fork/execute off this)
-    # perhaps run this when actually executing the test such that when it's done, it nicely exits?
-
-    if debug:
-        print(f"test_worker - unshare_process: done")
+            # don't execute any exit handlers
+            os._exit(0)
 
 
 if __name__ == '__main__':
-    pass
+    with Sandbox(Path(mkdtemp()), debug=True) as sandbox:
+        print(os.getpid())
+        subprocess.run("id")
+        print(os.getpid())
+        subprocess.run(["ls", "-al", "/home/postgres"])
+        print(os.getpid())
+        subprocess.run(["touch", "/home/postgres/test"])
