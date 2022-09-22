@@ -43,7 +43,7 @@ class TestWorker(AbstractWorker):
         pass
 
     def support_execute(self, cmd):
-        print(os.getpid())
+        print(f"support_exec: {os.getpid()}")
         return subprocess.run(cmd, shell=True).returncode
 
 
@@ -78,6 +78,7 @@ def pool_worker_test(worker_id):
         #worker.support_execute(["cat", f"/proc/{os.getpid()}/status"])
         #worker.support_execute(["cat", "README.md"])
     else:
+        print(f"not child: {os.getpid()}")
         _, status = os.waitpid(pid, 0)
     worker.cleanup()
 

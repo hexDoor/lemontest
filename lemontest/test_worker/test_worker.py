@@ -5,7 +5,6 @@ from pathlib import Path
 import tempfile
 import shutil
 import sys
-import os
 import time
 
 from .sandbox.sandbox import Sandbox
@@ -37,28 +36,18 @@ class TestWorker(AbstractWorker):
         pass
 
     def execute(self, test: AbstractTest):
-        # FIXME: spawn container
+        # spawn sandbox runtime context
+        with Sandbox(self.worker_root, self.parameters) as sandbox:
+            # TODO: execute test in sandbox
+            test.preprocess()
+            #test.run_test()
+            #print("running test")
+            #print(test)
+            time.sleep(1)
+            test.postprocess()
 
-        # how do i avoid having to rerun the file under bwrap?
-        # could've just used unshare then
-        # is there a way to create a container and run
-
-        # perhaps fork this process here and go with my own sandboxing
-        # with unshare calls
-
-        # spawn sandbox runtime
-        self.sandbox = Sandbox(self.worker_root, self.parameters)
-        
-
-        # TODO: execute test in sandbox
-        test.preprocess()
-        #test.run_test()
-        #print("running test")
-        #print(test)
-        time.sleep(1)
-        test.postprocess()
-
-        pass
+        # return processed test
+        return test
 
     def cleanup(self):
         # delete container

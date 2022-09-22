@@ -27,13 +27,14 @@ def execute_autotest():
     # setup test scheduler
     test_scheduler = TestScheduler.TestScheduler(**parser.params())
     # schedule execute tests
-    test_scheduler.schedule(parser.tests())
+    processed_tests = test_scheduler.schedule(parser.tests())
     # await execution finish and cleanup
     test_scheduler.cleanup()
 
     # TODO: send tests to output processor
     # TODO: post autotest cleanup/misc actions
-    
+    print(processed_tests)
+
     return 0
 
 

@@ -21,7 +21,7 @@ class Sandbox:
     isolate_networking = None
     ro_mounts = None
     rw_mounts = None
-    sandbox_pid1_manager = None
+    pid1_manager = None
 
     def __init__(self, root_dir: Path, **parameters):
         self.debug = parameters["debug"]
@@ -40,7 +40,7 @@ class Sandbox:
             print(f"creating a new sandbox ({self.sandbox_id})")
 
         # TODO: setup system for proper BindMounts
-        self.sandbox_pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, [])
+        self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, [])
 
         # FIXME: rely on delegated cgroups v2 when support matures
         # with new python management libraries
@@ -50,16 +50,10 @@ class Sandbox:
         # FIXME: consider systemd transient cgroups v2 scopes
         # see: https://manpages.ubuntu.com/manpages/bionic/man1/systemd-run.1.html
 
-        # mount the file system
-        # TODO: move to PID1
-        if self.debug:
-            print(f"Creating new file system")
-        fs.setup_fs(root_dir)
-
-    def run(self, cmd):
+    def __enter__(self):
         pass
 
-    def delete(self):
+    def __exit__(self):
         pass
 
 
@@ -71,10 +65,19 @@ class PID1Manager:
         pass
 
     def start(self):
-        pass
+        # unshare the PID namespace at this point such that we can initialise a
+        # pure-python PID 1
         libc.unshare(libc.CLONE_NEWPID)
 
+        # fork child process to be PID 1
         self.pid = os.fork()
+        
+        # child process (PID 1)
+        if self.pid == 0:
+            pass
+        # parent process (waits for completion)
+        else:
+            _, status = os.waitpid(self.pid, 0)
         
 
 
