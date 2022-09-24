@@ -4,7 +4,7 @@ from pathlib import Path
 
 import tempfile
 import shutil
-import os
+import subprocess
 import time
 
 from .sandbox.sandbox import Sandbox
@@ -26,7 +26,7 @@ class TestWorker(AbstractWorker):
         return str(info)
 
     def setup(self):
-        # do nothing as not needed but here to follow design
+        # TODO: copy files to temp directory
         pass
 
     def execute(self, test: AbstractTest):
@@ -34,17 +34,15 @@ class TestWorker(AbstractWorker):
         with Sandbox(self.worker_root, **self.parameters) as sb:
             # TODO: execute test in sandbox
             test.preprocess()
-            time.sleep(2)
+            subprocess.run(["id", "-a"])
             test.label = test.label + "kek"
-            #print(os.getpid())
-            #subprocess.run("id")
+            time.sleep(1)
             #test.run_test()
             #print("running test")
             #print(test)
             test.postprocess()
 
         # return processed test
-        print(f"returning {test}")
         return test
 
     def cleanup(self):

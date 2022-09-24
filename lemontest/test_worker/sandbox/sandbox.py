@@ -37,6 +37,8 @@ class Sandbox:
         self.rw_mounts = parameters.get("sandbox_read_write_mount", [])
         self.rw_mounts += [self.root_dir]
 
+        # TODO: translate mountables to bind mounts
+
         if self.debug:
             print(f"creating a new sandbox ({self.sandbox_id})")
 
