@@ -12,6 +12,7 @@ import subprocess
 import time
 
 from .util import libc, pid1
+from .util.config import BindMount
 # A tuple can be to specify a different mount point in the
 # sandbox 
 
@@ -22,6 +23,7 @@ class Sandbox:
     isolate_networking = None
     ro_mounts = None
     rw_mounts = None
+    pid1_mountables = None
     pid1_manager = None
 
     def __init__(self, root_dir: Path, **parameters):
@@ -31,19 +33,26 @@ class Sandbox:
         self.isolate_networking = parameters.get("worker_isolate_network", True)
 
         # load mountables
-        self.ro_mounts = parameters.get("sandbox_read_only_mount_base", [])
-        self.ro_mounts += parameters.get("sandbox_read_only_mount", [])
+        self.ro_mounts = parameters.get("worker_read_only_mount_base", [])
+        self.ro_mounts += parameters.get("worker_read_only_mount", [])
 
-        self.rw_mounts = parameters.get("sandbox_read_write_mount", [])
-        self.rw_mounts += [self.root_dir]
+        self.rw_mounts = parameters.get("worker_read_write_mount_base", [])
+        self.rw_mounts += parameters.get("worker_read_write_mount", [])
 
-        # TODO: translate mountables to bind mounts
+        # translate ro and rw mountables to bind mounts
+        self.pid1_mountables = []
+        # ro mounts
+        for mount_path in self.ro_mounts:
+            self.pid1_mountables.append(BindMount(source=mount_path, destination=mount_path, readonly=True))
+        # rw mounts
+        for mount_path in self.rw_mounts:
+            self.pid1_mountables.append(BindMount(source=mount_path, destination=mount_path, readonly=False))
 
         if self.debug:
             print(f"creating a new sandbox ({self.sandbox_id})")
 
         # TODO: setup system for proper BindMounts
-        self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, [], self.debug)
+        self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, self.pid1_mountables, self.debug)
 
         # FIXME: rely on delegated cgroups v2 when support matures
         # with new python management libraries
@@ -57,9 +66,16 @@ class Sandbox:
         self.pid1_manager.start() 
 
     def __exit__(self, exc_type, exc_value, traceback):
+        # TODO: Ideally we would set back the namespace to the original
+        # worker process but we already killed that so oh well.
+        # nsset(2) would also require super user perms which we dont have
+        # for a rootless container => impossible to implement this at the
+        # current time
+        # thus, this actually does nothing right now
         if traceback:
-            print("fuck")
-        pass
+            print(f"sandbox exit error: {traceback}")
+
+        self.pid1_manager.exit()
 
 
 class PID1Manager:
@@ -94,18 +110,26 @@ class PID1Manager:
         if self.pid == 0:
             # instantiate and execute PID1 setup as everything
             # from now on spawns from this process
-            self.pid1_class = pid1.PID1(self.isolate_networking, self.debug)
+            self.pid1_class = pid1.PID1(self.root_dir, self.isolate_networking, self.debug, self.bind_mounts)
+            self.pid1_class.run()
         # wait then kill parent process which doesn't have pid 1
         # child process is PID1 so we're safe as all control gets inherited back
         else:
             # don't execute any exit handlers
             os._exit(0)
+    
+    def exit(self):
+        self.pid1_class.exit()
 
 
 if __name__ == '__main__':
-    with Sandbox(Path(mkdtemp()), debug=True) as sandbox:
+    params = {
+        "debug": True,
+        "worker_read_only_mount_base" : ['/bin', '/etc', '/lib', '/lib32', '/lib64', '/libx32', '/sbin', '/usr', '/home']
+    }
+    with Sandbox(Path(mkdtemp()), **params) as sandbox:
         print(os.getpid())
-        subprocess.run("id")
+        subprocess.run(["ls", "-al"])
         print(os.getpid())
         subprocess.run(["ls", "-al", "/home/postgres"])
         print(os.getpid())

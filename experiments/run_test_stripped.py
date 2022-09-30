@@ -1,14 +1,17 @@
-import codecs
-import time
-import os
-import shlex
+# run a single test
+#
+# This code needs extensive rewriting.
+# Much of the code can be moved to parameter_descriptions.py
+
+import codecs, os, re, shlex, subprocess, time
 from termcolor import colored as termcolor_colored
-from collections import defaultdict
 
-from classes.test import AbstractTest
-from legacy_test_definition.subprocess_with_resource_limits import run
 
-class Test(AbstractTest):
+class InternalError(Exception):
+    pass
+
+
+class _Test:
     def __init__(self, autotest_dir, **parameters):
         debug = parameters["debug"]
         self.autotest_dir = autotest_dir
@@ -23,8 +26,9 @@ class Test(AbstractTest):
                 mapping.pop(c, None)
         else:
             mapping = dict.fromkeys(parameters["ignore_characters"], None)
+        # 		mapping['\r'] = '\n'
+
         self.canonical_translator = "".maketrans(mapping)
-        
         self.command = parameters["command"]
         self.debug = parameters["debug"]
         self.files = parameters["files"]
@@ -40,10 +44,6 @@ class Test(AbstractTest):
 
     def __str__(self):
         return f"Test({self.label}, {self.program}, {self.command})"
-
-    # TODO: add in legacy preprocessing
-    def preprocess(self):
-        pass
 
     def run_test(self, compile_command=""):
         if self.debug > 1:
@@ -64,7 +64,6 @@ class Test(AbstractTest):
             # ugly work-around for
             # weird termination with non-zero exit status seen on some CSE servers
             # ignore this execution and try again
-            # TODO: try testing if we can remove this?
             time.sleep(1)
 
         if self.parameters["unicode_stdout"]:
@@ -77,13 +76,61 @@ class Test(AbstractTest):
         else:
             self.stderr = stderr
 
-    # add in legacy postprocessing
-    def postprocess(self):
-        pass
+        self.short_explanation = None
+        self.long_explanation = None
 
-    # helper functions
+        stdout_short_explanation = self.check_stream(
+            self.stdout, self.expected_stdout, "output"
+        )
+        if not self.parameters["allow_unexpected_stderr"] or stdout_short_explanation:
+            if (
+                self.parameters["dcc_output_checking"]
+                and "Execution stopped because" in self.stderr
+            ):
+                self.short_explanation = "incorrect output"
+            else:
+                self.short_explanation = self.check_stream(
+                    self.stderr, self.expected_stderr, "stderr"
+                )
+
+        self.stderr_ok = not self.short_explanation
+
+        self.stdout_ok = not stdout_short_explanation
+
+        if not self.short_explanation:
+            self.short_explanation = stdout_short_explanation
+
+        if not self.short_explanation:
+            self.short_explanation = self.check_files()
+
+        self.test_passed = not self.short_explanation
+        if not self.test_passed:
+            self.failed_compiler = (
+                " ".join(compile_command)
+                if isinstance(compile_command, list)
+                else str(compile_command)
+            )
+        return self.test_passed
+
     def set_environ(self):
         test_environ = self.parameters["environment"]
         if os.environ != test_environ:
             os.environ.clear()
             os.environ.update(test_environ)
+
+
+def echo_command_for_string(test_input):
+    options = []
+    if test_input and test_input[-1] == "\n":
+        test_input = test_input[:-1]
+    else:
+        options += ["-n"]
+    echo_string = shlex.quote(test_input)
+    if "\n" in test_input[:-1]:
+        echo_string = echo_string.replace("\\", r"\\")
+        options += ["-e"]
+    echo_string = echo_string.replace("\n", r"\n")
+    command = "echo "
+    if options:
+        command += " ".join(options) + " "
+    return command + echo_string

@@ -3,7 +3,7 @@
 from collections import namedtuple
 from pathlib import Path
 
-from .util.libc import MS_NOSUID, MS_NOEXEC, MS_NODEV, MS_RDONLY, MS_STRICTATIME
+from .libc import MS_NOSUID, MS_NOEXEC, MS_NODEV, MS_RDONLY, MS_STRICTATIME
 
 Mount = namedtuple('Mount', ['destination', 'type', 'source', 'flags', 'options'])
 BindMount = namedtuple('BindMount', ['source', 'destination', 'readonly'])
@@ -38,35 +38,35 @@ CONTAINER_MOUNTS = [
             "size=65536k",
         ],
     ),
-    Mount(
-        destination=Path("/dev/pts"),
-        type="devpts",
-        source="devpts",
-        flags=MS_NOSUID | MS_NOEXEC,
-        options=[
-            "newinstance",
-            "ptmxmode=0666",
-            "mode=0620",
-            "gid=5",
-        ],
-    ),
-    Mount(
-        destination=Path("/dev/shm"),
-        type="tmpfs",
-        source="shm",
-        flags=MS_NOSUID | MS_NOEXEC | MS_NODEV,
-        options=[
-            "mode=1777",
-            "size=65536k",
-        ],
-    ),
-    Mount(
-        destination=Path("/dev/mqueue"),
-        type="mqueue",
-        source="mqueue",
-        flags=MS_NOSUID | MS_NOEXEC | MS_NODEV,
-        options=None,
-    ),
+    #Mount(
+    #    destination=Path("/dev/pts"),
+    #    type="devpts",
+    #    source="devpts",
+    #    flags=MS_NOSUID | MS_NOEXEC,
+    #    options=[
+    #        "newinstance",
+    #        "ptmxmode=0666",
+    #        "mode=0620",
+    #        "gid=5",
+    #    ],
+    #),
+    #Mount(
+    #    destination=Path("/dev/shm"),
+    #    type="tmpfs",
+    #    source="shm",
+    #    flags=MS_NOSUID | MS_NOEXEC | MS_NODEV,
+    #    options=[
+    #        "mode=1777",
+    #        "size=65536k",
+    #    ],
+    #),
+    #Mount(
+    #    destination=Path("/dev/mqueue"),
+    #    type="mqueue",
+    #    source="mqueue",
+    #    flags=MS_NOSUID | MS_NOEXEC | MS_NODEV,
+    #    options=None,
+    #),
     Mount(
         destination=Path("/sys"),
         type="sysfs",

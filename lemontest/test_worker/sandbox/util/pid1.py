@@ -1,14 +1,36 @@
+#
+# Pure Python PID 1 handler
+# inspired by https://github.com/balabit/furnace/
+#
+
 from functools import reduce
+from pathlib import Path
 
 import signal
 import os
 
 from . import libc
+from .config import CONTAINER_MOUNTS, BindMount
 
 class PID1:
-    def __init__(self, isolate_networking, debug):
-        self.enable_zombie_reaping()
-        unshare_process(isolate_networking)
+    def __init__(self, root_dir, isolate_networking, debug, bind_mounts):
+        self.root_dir = Path(root_dir).resolve()
+        self.isolate_networking = isolate_networking
+        self.debug = debug
+        self.bind_mounts = self.convert_bind_mounts_parameter(bind_mounts)
+        self.old_root = os.open("/", os.O_PATH) # i'm going to regret having an open fd to root
+        # but it's necessary for proper cleanup
+    
+    @classmethod
+    def convert_bind_mounts_parameter(cls, bind_mounts):
+        result = []
+        for source, destination, read_only in bind_mounts:
+            source = Path(source)
+            destination = Path(destination)
+            if destination.is_absolute():
+                destination = destination.relative_to("/")
+            result.append(BindMount(source, destination, read_only))
+        return result
 
     def enable_zombie_reaping(self):
         # We are pid 1, so we have to take care of orphaned processes
@@ -17,6 +39,89 @@ class PID1:
         # and get rid of zombies automatically
         signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         pass
+
+    @classmethod
+    def create_mount_target(cls, source, destination):
+        if source.is_file():
+            if destination.is_symlink():
+                destination.unlink()
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.touch()
+        else:
+            destination.mkdir(parents=True, exist_ok=True)
+
+    def create_bind_mounts(self):
+        for source, relative_destination, read_only in self.bind_mounts:
+            destination = self.root_dir.joinpath(relative_destination)
+            self.create_mount_target(source, destination)
+            if self.debug:
+                print(f"Bind Mounting BindMount({source}, {relative_destination}, {read_only})")
+            libc.mount(source, destination, None, libc.MS_BIND | libc.MS_REC , None)
+            if read_only:
+                # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
+                # which is why we have to make the bind mount read-only in a separate call.
+                # See https://lwn.net/Articles/281157/
+                flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_RDONLY
+                libc.mount(Path(), destination, None, flags, None)
+
+    def setup_root_mount(self):
+        # SLAVE means that mount events will get inside the container, but
+        # mounting something inside will not leak out.
+        # Use PRIVATE to not let outside events propagate in
+        libc.mount(Path("none"), Path("/"), None, libc.MS_REC | libc.MS_SLAVE, None)
+        if not libc.is_mount_point(self.root_dir):
+            libc.mount(self.root_dir, self.root_dir, None, libc.MS_BIND, None)
+        self.create_bind_mounts()
+        old_root_dir = self.root_dir.joinpath('old_root')
+        old_root_dir.mkdir(parents=True, exist_ok=True)
+        os.chdir(str(self.root_dir))
+        libc.pivot_root(Path('.'), Path('old_root'))
+        os.chroot('.')
+
+    def mount_defaults(self):
+        for m in CONTAINER_MOUNTS:
+            options = None
+            if m.options:
+                options = ",".join(m.options)
+            m.destination.mkdir(parents=True, exist_ok=True)
+            if self.debug:
+                print(f"Mounting {m}")
+            libc.mount(m.source, m.destination, m.type, m.flags, options)
+
+    def umount_old_root(self):
+        libc.umount2('/old_root', libc.MNT_DETACH)
+        os.rmdir('/old_root')
+
+    def umount_defaults(self):
+        for m in CONTAINER_MOUNTS:
+            libc.umount2(m.destination, libc.MNT_DETACH)
+            os.rmdir(m.destination)
+            pass
+
+    def umount_bind_mounts(self):
+        for _, relative_destination, _ in self.bind_mounts:
+            libc.umount2(relative_destination, libc.MNT_DETACH)
+            os.rmdir(relative_destination)
+    
+    def umount_all(self):
+        self.umount_defaults()
+        self.umount_bind_mounts()
+
+    def run(self):
+        self.enable_zombie_reaping()
+        unshare_process(self.isolate_networking)
+        self.setup_root_mount()
+        self.mount_defaults()
+        self.umount_old_root()
+
+    def exit(self):
+        # umount all for cleanup
+        self.umount_all()
+
+        # chroot back to default
+        os.chdir(self.old_root)
+        os.chroot('.')
+
 
 # inspired by https://github.com/PexMor/unshare and Andrew Taylor's experiments
 # also inspired by my friend ralismark
