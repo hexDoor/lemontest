@@ -3,7 +3,7 @@
 from collections import namedtuple
 from pathlib import Path
 
-from .libc import MS_NOSUID, MS_NOEXEC, MS_NODEV, MS_RDONLY, MS_STRICTATIME
+from .libc import MS_NOSUID, MS_NOEXEC, MS_NODEV, MS_RDONLY, MS_REC, MS_STRICTATIME
 
 Mount = namedtuple('Mount', ['destination', 'type', 'source', 'flags', 'options'])
 BindMount = namedtuple('BindMount', ['source', 'destination', 'readonly'])

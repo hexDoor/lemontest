@@ -43,6 +43,8 @@ class Test(AbstractTest):
 
     # TODO: add in legacy preprocessing
     def preprocess(self):
+        # TODO: run pre-compile
+        # TODO: run compile
         pass
 
     def run_test(self, compile_command=""):
@@ -87,3 +89,6 @@ class Test(AbstractTest):
         if os.environ != test_environ:
             os.environ.clear()
             os.environ.update(test_environ)
+
+    def params(self):
+        return self.parameters

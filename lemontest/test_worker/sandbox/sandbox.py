@@ -71,7 +71,6 @@ class Sandbox:
         # nsset(2) would also require super user perms which we dont have
         # for a rootless container => impossible to implement this at the
         # current time
-        # thus, this actually does nothing right now
         if traceback:
             print(f"sandbox exit error: {traceback}")
 

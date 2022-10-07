@@ -52,4 +52,5 @@ class Parser(AbstractParser):
     def post_parse_misc(self):
         cmdlineargs.normalize_arguments(self._args, self._tests)
         # make the tests actually usable (convert dict to list)
-        self._tests = [test for test in self._tests.values()]
+        # get tests to run based on label selection
+        self._tests = [test for (label, test) in self._tests.items() if label in self._args.labels]

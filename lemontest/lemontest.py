@@ -9,13 +9,6 @@ import traceback
 import legacy_parser.adapter as Parser
 import test_scheduler.test_scheduler as TestScheduler
 
-# interrupt handler
-# TODO: spin down any subprocesses if interrupted
-def interrupt_handler(signum, frame):
-    kill_all()
-    os._exit(2)
-
-
 def execute_autotest():
     # setup parser
     parser = Parser.Parser()
@@ -25,7 +18,7 @@ def execute_autotest():
     parser.post_parse_misc()
 
     # setup test scheduler
-    test_scheduler = TestScheduler.TestScheduler(**parser.params())
+    test_scheduler = TestScheduler.TestScheduler(parser.args(), parser.params())
     # schedule execute tests
     processed_tests = test_scheduler.schedule(parser.tests())
     # await execution finish and cleanup

@@ -2,6 +2,7 @@ from classes.test_worker import AbstractWorker
 from classes.test import AbstractTest
 from pathlib import Path
 from termcolor import colored as termcolor_colored
+from multiprocessing import Lock
 
 import tempfile
 import shutil
@@ -11,12 +12,14 @@ from .sandbox.sandbox import Sandbox
 
 # This should be executed as a new process via multiprocessing (fork)
 class TestWorker(AbstractWorker):
+    shared_dir = None
     parameters = None
     worker_root = None
     debug = None
     colored = None
 
-    def __init__(self, **parameters):
+    def __init__(self, shared_dir, **parameters):
+        self.shared_dir = shared_dir
         self.parameters = parameters
         self.worker_root = Path(tempfile.mkdtemp())
         self.debug = parameters["debug"]
@@ -28,21 +31,30 @@ class TestWorker(AbstractWorker):
 
     def __str__(self):
         info = {
+            "shared_dir": self.shared_dir,
             "worker_root": self.worker_root
         }
         return str(info)
 
     def setup(self):
-        # TODO: copy files to temp directory
-        # TODO: run pre-compile
-        # TODO: run compile
-        
+        # TODO: copy supplied folder files to temp directory
+
         pass
 
-    def execute(self, test: AbstractTest):
+    def execute(self, test: AbstractTest, pLock: Lock):
+
+        # this also allows us to cache on a shared binary resource
+        # as such, we also consider test.preprocess() to be a critical section
+
+        # TODO: copy requires files into a known temp directory from scheduler (put in __init__)
+
         # spawn sandbox runtime context
+        # TODO: rw bind in the scheduler temp directory (should allow caching between worker processes, use lock) 
         with Sandbox(self.worker_root, **self.parameters) as sb:
+            pLock.acquire()
             test.preprocess()
+            pLock.release()
+
             #test.run_test()
             print(test)
             test.postprocess()

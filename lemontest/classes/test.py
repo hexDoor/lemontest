@@ -52,3 +52,21 @@ class AbstractTest:
         Returns: bool
         """
         pass
+
+
+    def set_environ(self):
+        """
+        Sets up the environment of the test
+
+        Returns: None
+        """
+        pass
+
+
+    def params(self):
+        """
+        Returns the parameter dictionary of the test
+
+        Returns: Dict[str, Any]
+        """
+        pass
