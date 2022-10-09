@@ -9,7 +9,7 @@ import shutil
 import os
 import subprocess
 
-from .sandbox.sandbox import Sandbox
+from .sandbox.sandbox import Sandbox, SHARED_DIR_DEST
 
 # This should be executed as a new process via multiprocessing (fork)
 class TestWorker(AbstractWorker):
@@ -47,18 +47,17 @@ class TestWorker(AbstractWorker):
         # this also allows us to cache on a shared binary resource
         # as such, we also consider test.preprocess() to be a critical section
 
-        # TODO: copy requires files into a known temp directory from scheduler (put in __init__)
-
-        # rw bind in the scheduler temp directory (should allow caching between worker processes but must use lock) 
+        # rw bind in the scheduler temp directory (should allow caching between worker processes but must use lock)
+        # available within Sandbox as "/shared" 
         # spawn sandbox runtime context
         with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
             pLock.acquire()
-            test.preprocess()
+            pStatus = test.preprocess(SHARED_DIR_DEST)
             pLock.release()
+            if not pStatus:
+                return test
 
-            #test.run_test()
-            #subprocess.run(["ls", "-l"])
-            #print(test)
+            test.run_test()
 
             test.postprocess()
 

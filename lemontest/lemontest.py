@@ -3,7 +3,6 @@
 import os
 import sys
 import re
-import signal
 import traceback
 
 import legacy_parser.adapter as Parser
@@ -40,8 +39,7 @@ def main():
 
     # load interrupt handler 
     # how do we approach this with multiprocessing pools? (possibly a seperate interrupt handler to kill resources?)
-    #if not debug:
-        #signal.signal(signal.SIGINT, interrupt_handler)
+    # probably not necessary (just let it die by itself hahaaa)
 
     # execute autotests
     try:
@@ -49,17 +47,16 @@ def main():
     except Exception:
         etype, evalue, _etraceback = sys.exc_info()
         eformatted = "\n".join(traceback.format_exception_only(etype, evalue))
-        
+
         print(f"{name}: internal error: {eformatted}", file=sys.stderr)
-        
+
         if debug:
             traceback.print_exc(file=sys.stderr)
         sys.exit(2)
 
 
-# kill everything
-def kill_all():
-    pass
-
 if __name__ == "__main__":
+    if sys.platform != 'linux':
+        print("lemontest is not supported on non-linux systems")
+        sys.exit(1)
     main()

@@ -3,7 +3,7 @@ import legacy_parser.command_line_arguments as cmdlineargs
 import legacy_parser.parse_test_specification as parsetestspec
 
 # TODO: Forced Legacy Design Break (thanks legacy parser)
-from legacy_test_definition.test import Test
+from test_definition.test import Test
 
 class Parser(AbstractParser):
     # standard vars

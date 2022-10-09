@@ -14,11 +14,15 @@ import time
 from .util import libc, pid1
 from .util.config import BindMount
 # A tuple can be to specify a different mount point in the
-# sandbox 
+# sandbox
+
+SHARED_DIR_DEST = Path("/shared")
 
 class Sandbox:
     debug = False
     root_dir = None
+    shared_dir = None
+    shared_dir_dest = None
     sandbox_id = None
     isolate_networking = None
     ro_mounts = None
@@ -30,6 +34,7 @@ class Sandbox:
         self.debug = parameters["debug"]
         self.root_dir = root_dir.resolve()
         self.shared_dir = shared_dir.resolve()
+        self.shared_dir_dest = SHARED_DIR_DEST.resolve()
         self.sandbox_id = str(uuid.uuid4())
         self.isolate_networking = parameters.get("worker_isolate_network", True)
 
@@ -50,7 +55,7 @@ class Sandbox:
             self.pid1_mountables.append(BindMount(source=mount_path, destination=mount_path, readonly=False))
 
         # rw mount worker shared directory (managed by scheduler)
-        self.pid1_mountables.append(BindMount(source=self.shared_dir, destination="/shared", readonly=False))
+        self.pid1_mountables.append(BindMount(source=self.shared_dir, destination=self.shared_dir_dest.resolve(), readonly=False))
 
         if self.debug:
             print(f"creating a new sandbox ({self.sandbox_id})")
@@ -67,7 +72,8 @@ class Sandbox:
         # see: https://manpages.ubuntu.com/manpages/bionic/man1/systemd-run.1.html
 
     def __enter__(self):
-        self.pid1_manager.start() 
+        self.pid1_manager.start()
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         # TODO: Ideally we would set back the namespace to the original

@@ -5,7 +5,7 @@ from util.util import die
 
 # typing
 from argparse import Namespace
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 # apply pool patch
 import util.istarmap
@@ -56,7 +56,7 @@ class TestScheduler(AbstractScheduler):
     def __str__(self):
         pass
 
-    def schedule(self, tests: Dict[str, AbstractTest]):
+    def schedule(self, tests: List[AbstractTest]) -> List[AbstractTest]:
         # check there are tests available to run
         if not tests:
             die(f"autotest not available for {self.args.exercise}")
@@ -76,9 +76,24 @@ class TestScheduler(AbstractScheduler):
         if missing_files:
             die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
 
+        # TODO: copy required files into a known temp directory from scheduler
+
         # schedule tests for execution and show progress
-        test_res = list(tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), desc=f"Running {len(tests)} tests:", unit=" tests"))
-        
+        test_res = []
+        pass_count = 0
+        fail_count = 0
+        pbar = tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test")
+        for res in pbar:
+            if res.passed():
+                pass_count += 1
+            else:
+                fail_count += 1
+            total_desc = f"Running {len(tests)} tests"
+            pass_desc = self.colored(f"{pass_count} tests passed", 'green')
+            fail_desc = self.colored(f"{fail_count} tests failed", 'red')
+            pbar.set_description(f"{total_desc} | {pass_desc} | {fail_desc}")
+            test_res.append(res)
+
         # terminate worker pool as work is done
         self.worker_pool.terminate()
         self.worker_pool.join() # this doesn't sometimes work with .close() so just terminate
@@ -89,7 +104,7 @@ class TestScheduler(AbstractScheduler):
         # return results
         return test_res
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         if self.worker_pool:
             self.worker_pool.terminate() # send SIGTERM to worker processes
         if self.shared_dir:
@@ -99,13 +114,13 @@ class TestScheduler(AbstractScheduler):
 # see: test_worker to see why this is absolutely necessary
 # we can't use multiprocessing.Manager because that will break if we
 # isolate networking within the sandbox (more common than not)
-def test_worker_init(lock: Lock):
+def test_worker_init(lock: Lock) -> None:
     global pLock
     pLock = lock
 
 
 # initalise worker and execute task
-def test_worker(test: AbstractTest, shared_dir: Path, parameters):
+def test_worker(test: AbstractTest, shared_dir: Path, parameters) -> AbstractTest:
     worker = TestWorker(shared_dir, **parameters)
     worker.setup()
     res = worker.execute(test, pLock) #pLock available from Pool initializer (global var)

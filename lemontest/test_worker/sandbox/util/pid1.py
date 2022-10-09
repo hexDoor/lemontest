@@ -106,13 +106,15 @@ class PID1:
 
     def umount_bind_mounts(self):
         for _, relative_destination, _ in self.bind_mounts:
-            # skip unmounting if source didn't exist
-            if not relative_destination.exists():
+            # skip unmounting if destination doesn't exist
+            # everything should be relative to root
+            destination = Path("/").joinpath(relative_destination)
+            if not destination.exists():
                 if self.debug:
-                    print(f"WARNING: Unmount BindMount Skipped - '{relative_destination}' does not exist")
+                    print(f"WARNING: Unmount BindMount Skipped - '{destination}' does not exist")
                 continue
-            libc.umount2(relative_destination, libc.MNT_DETACH)
-            os.rmdir(relative_destination)
+            libc.umount2(destination, libc.MNT_DETACH)
+            os.rmdir(destination)
     
     def umount_all(self):
         self.umount_defaults()

@@ -28,6 +28,9 @@ class AbstractTest:
         """
         Execute any preprocessing such as checks etc.
         Should return whether preprocessing succeded
+        
+        NOTE: This function will most likely contain critical sections
+        Ensure critical section safety with synchronisation primitives (mutex lock etc.)
 
         Returns: bool
         """
@@ -68,5 +71,14 @@ class AbstractTest:
         Returns the parameter dictionary of the test
 
         Returns: Dict[str, Any]
+        """
+        pass
+
+
+    def passed(self):
+        """
+        Returns whether the test passed or not
+
+        Returns: bool
         """
         pass
