@@ -52,6 +52,12 @@ class PID1:
 
     def create_bind_mounts(self):
         for source, relative_destination, read_only in self.bind_mounts:
+            # check if the source actually exists (Issue picked up in Arch with missing /lib32)
+            if not source.exists():
+                if self.debug:
+                    print(f"WARNING: BindMount Skipped - '{source}' does not exist")
+                continue
+
             destination = self.root_dir.joinpath(relative_destination)
             self.create_mount_target(source, destination)
             if self.debug:
@@ -61,7 +67,7 @@ class PID1:
                 # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
                 # which is why we have to make the bind mount read-only in a separate call.
                 # See https://lwn.net/Articles/281157/
-                flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_RDONLY
+                flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_REC | libc.MS_RDONLY
                 libc.mount(Path(), destination, None, flags, None)
 
     def setup_root_mount(self):
@@ -100,6 +106,11 @@ class PID1:
 
     def umount_bind_mounts(self):
         for _, relative_destination, _ in self.bind_mounts:
+            # skip unmounting if source didn't exist
+            if not relative_destination.exists():
+                if self.debug:
+                    print(f"WARNING: Unmount BindMount Skipped - '{relative_destination}' does not exist")
+                continue
             libc.umount2(relative_destination, libc.MNT_DETACH)
             os.rmdir(relative_destination)
     

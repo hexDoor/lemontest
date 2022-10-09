@@ -26,9 +26,10 @@ class Sandbox:
     pid1_mountables = None
     pid1_manager = None
 
-    def __init__(self, root_dir: Path, **parameters):
+    def __init__(self, root_dir: Path, shared_dir: Path, **parameters):
         self.debug = parameters["debug"]
         self.root_dir = root_dir.resolve()
+        self.shared_dir = shared_dir.resolve()
         self.sandbox_id = str(uuid.uuid4())
         self.isolate_networking = parameters.get("worker_isolate_network", True)
 
@@ -47,6 +48,9 @@ class Sandbox:
         # rw mounts
         for mount_path in self.rw_mounts:
             self.pid1_mountables.append(BindMount(source=mount_path, destination=mount_path, readonly=False))
+
+        # rw mount worker shared directory (managed by scheduler)
+        self.pid1_mountables.append(BindMount(source=self.shared_dir, destination="/shared", readonly=False))
 
         if self.debug:
             print(f"creating a new sandbox ({self.sandbox_id})")

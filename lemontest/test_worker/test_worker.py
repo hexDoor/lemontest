@@ -7,6 +7,7 @@ from multiprocessing import Lock
 import tempfile
 import shutil
 import os
+import subprocess
 
 from .sandbox.sandbox import Sandbox
 
@@ -18,7 +19,7 @@ class TestWorker(AbstractWorker):
     debug = None
     colored = None
 
-    def __init__(self, shared_dir, **parameters):
+    def __init__(self, shared_dir: Path, **parameters):
         self.shared_dir = shared_dir
         self.parameters = parameters
         self.worker_root = Path(tempfile.mkdtemp())
@@ -48,15 +49,17 @@ class TestWorker(AbstractWorker):
 
         # TODO: copy requires files into a known temp directory from scheduler (put in __init__)
 
+        # rw bind in the scheduler temp directory (should allow caching between worker processes but must use lock) 
         # spawn sandbox runtime context
-        # TODO: rw bind in the scheduler temp directory (should allow caching between worker processes, use lock) 
-        with Sandbox(self.worker_root, **self.parameters) as sb:
+        with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
             pLock.acquire()
             test.preprocess()
             pLock.release()
 
             #test.run_test()
-            print(test)
+            #subprocess.run(["ls", "-l"])
+            #print(test)
+
             test.postprocess()
 
         # return processed test

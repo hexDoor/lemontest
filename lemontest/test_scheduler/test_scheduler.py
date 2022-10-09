@@ -1,4 +1,3 @@
-import shutil
 from classes.test_scheduler import AbstractScheduler
 from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
@@ -12,10 +11,12 @@ from typing import Dict, Any
 import util.istarmap
 from multiprocessing import set_start_method, Pool, Lock, log_to_stderr, SUBDEBUG
 from termcolor import colored as termcolor_colored
+from pathlib import Path
 
 import tqdm
 import glob
 import tempfile
+import shutil
 
 """
 import logging
@@ -32,7 +33,7 @@ class TestScheduler(AbstractScheduler):
     def __init__(self, args: Namespace, parameters: Dict[str, Any]):
         self.args = args
         self.parameters = parameters
-        self.shared_dir = tempfile.mkdtemp()
+        self.shared_dir = Path(tempfile.mkdtemp())
         self.colored = (
             termcolor_colored
             if parameters["colorize_output"]
@@ -98,13 +99,13 @@ class TestScheduler(AbstractScheduler):
 # see: test_worker to see why this is absolutely necessary
 # we can't use multiprocessing.Manager because that will break if we
 # isolate networking within the sandbox (more common than not)
-def test_worker_init(lock):
+def test_worker_init(lock: Lock):
     global pLock
     pLock = lock
 
 
 # initalise worker and execute task
-def test_worker(test, shared_dir, parameters):
+def test_worker(test: AbstractTest, shared_dir: Path, parameters):
     worker = TestWorker(shared_dir, **parameters)
     worker.setup()
     res = worker.execute(test, pLock) #pLock available from Pool initializer (global var)
