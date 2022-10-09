@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
+import legacy_parser.adapter as Parser
+import test_scheduler.test_scheduler as TestScheduler
+
+from termcolor import colored as termcolor_colored
+
 import os
 import sys
 import re
 import traceback
-
-import legacy_parser.adapter as Parser
-import test_scheduler.test_scheduler as TestScheduler
 
 def execute_autotest():
     # setup parser
@@ -23,10 +25,20 @@ def execute_autotest():
     # await execution finish and cleanup
     test_scheduler.cleanup()
 
-    # TODO: send tests to output processor
+    # get failed_tests or exit early if everything passed
+    colored = (
+        termcolor_colored
+        if parser.params()["colorize_output"]
+        else lambda x, *a, **kw: x
+    )
+    failed_tests = [test for test in processed_tests if not test.passed()]
+    if not failed_tests:
+        print(colored("All Tests Passed", "green"))
+        return 0
+
     # TODO: post autotest cleanup/misc actions
-    print(processed_tests)
-    print()
+    # TODO: upload to cgi?
+    # TODO: send tests to output module (prettier output)
 
     return 0
 

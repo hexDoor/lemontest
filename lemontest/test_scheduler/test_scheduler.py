@@ -79,9 +79,11 @@ class TestScheduler(AbstractScheduler):
         # TODO: copy required files into a known temp directory from scheduler
 
         # schedule tests for execution and show progress
+        # super cursed but it looks nice
         test_res = []
         pass_count = 0
         fail_count = 0
+        count = 0
         pbar = tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test")
         for res in pbar:
             if res.passed():
@@ -89,10 +91,13 @@ class TestScheduler(AbstractScheduler):
             else:
                 fail_count += 1
             total_desc = f"Running {len(tests)} tests"
-            pass_desc = self.colored(f"{pass_count} tests passed", 'green')
-            fail_desc = self.colored(f"{fail_count} tests failed", 'red')
+            pass_desc = self.colored(f"{pass_count} tests passed", "green")
+            fail_desc = self.colored(f"{fail_count} tests failed", "red")
             pbar.set_description(f"{total_desc} | {pass_desc} | {fail_desc}")
             test_res.append(res)
+            count += 1
+            if count == len(tests):
+                pbar.set_description(f"Ran {len(tests)} tests | {pass_desc} | {fail_desc}")
 
         # terminate worker pool as work is done
         self.worker_pool.terminate()
