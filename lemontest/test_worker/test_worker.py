@@ -6,7 +6,7 @@ from multiprocessing import Lock
 
 import tempfile
 import shutil
-import os
+import atexit
 import subprocess
 
 from .sandbox.sandbox import Sandbox, SHARED_DIR_DEST
@@ -23,6 +23,7 @@ class TestWorker(AbstractWorker):
         self.shared_dir = shared_dir
         self.parameters = parameters
         self.worker_root = Path(tempfile.mkdtemp())
+        atexit.register(lambda: shutil.rmtree(self.worker_root))
         self.debug = parameters["debug"]
         self.colored = (
             termcolor_colored
@@ -38,12 +39,9 @@ class TestWorker(AbstractWorker):
         return str(info)
 
     def setup(self):
-        # TODO: copy supplied folder files to temp directory
-
         pass
 
     def execute(self, test: AbstractTest, pLock: Lock):
-
         # this also allows us to cache on a shared binary resource
         # as such, we also consider test.preprocess() to be a critical section
 
@@ -65,9 +63,7 @@ class TestWorker(AbstractWorker):
         return test
 
     def cleanup(self):
-        # cleanup temp root
-        if self.worker_root:
-            shutil.rmtree(self.worker_root)
+        pass
 
 if __name__ == '__main__':
     parameters = {'worker_count': 3, 'debug': True}

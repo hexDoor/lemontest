@@ -2,6 +2,7 @@ from classes.test_scheduler import AbstractScheduler
 from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
 from util.util import die
+from util.fs import copy_files_to_directory
 
 # typing
 from argparse import Namespace
@@ -17,6 +18,7 @@ import tqdm
 import glob
 import tempfile
 import shutil
+import atexit
 
 """
 import logging
@@ -34,6 +36,7 @@ class TestScheduler(AbstractScheduler):
         self.args = args
         self.parameters = parameters
         self.shared_dir = Path(tempfile.mkdtemp())
+        atexit.register(lambda: shutil.rmtree(self.shared_dir))
         self.colored = (
             termcolor_colored
             if parameters["colorize_output"]
@@ -76,7 +79,9 @@ class TestScheduler(AbstractScheduler):
         if missing_files:
             die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
 
-        # TODO: copy required files into a known temp directory from scheduler
+        # copy required files (student submission + test provided)
+        # into a known temp directory from scheduler
+        copy_files_to_directory(self.shared_dir, self.parameters, self.args)
 
         # schedule tests for execution and show progress
         # super cursed but it looks nice
@@ -112,8 +117,7 @@ class TestScheduler(AbstractScheduler):
     def cleanup(self) -> None:
         if self.worker_pool:
             self.worker_pool.terminate() # send SIGTERM to worker processes
-        if self.shared_dir:
-            shutil.rmtree(self.shared_dir)
+
 
 # setup a global variable to inherit a global lock for the test preprocessing
 # see: test_worker to see why this is absolutely necessary

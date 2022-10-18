@@ -32,9 +32,12 @@ def execute_autotest():
         else lambda x, *a, **kw: x
     )
     failed_tests = [test for test in processed_tests if not test.passed()]
+    for test in processed_tests:
+        print(f"{test.explanation} - {test.passed()}")
     if not failed_tests:
         print(colored("All Tests Passed", "green"))
         return 0
+
 
     # TODO: post autotest cleanup/misc actions
     # TODO: upload to cgi?

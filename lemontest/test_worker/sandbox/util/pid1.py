@@ -34,11 +34,14 @@ class PID1:
 
     def enable_zombie_reaping(self):
         # We are pid 1, so we have to take care of orphaned processes
-        # Interestingly, SIG_IGN is the default handler for SIGCHLD,
-        # but this way we signal to the kernel that we will not call waitpid
-        # and get rid of zombies automatically
-        signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-        pass
+        # We could SIG_IGN any SIGCHLD signals (which is the default)
+        # However, explicitly providing SIG_IGN would inform the kernel
+        # that we won't be wait'ing on any subprocesses and that the kernel
+        # should remove subprocesses automatically from the pid table.
+        # Unfortunately, that means we won't be able to get any exit codes
+        # if we continue with this.
+        # As such, we have to go with SIG_DFL in order to get the exit codes we need
+        signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
     @classmethod
     def create_mount_target(cls, source, destination):

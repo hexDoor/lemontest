@@ -8,6 +8,7 @@ from .libc import MS_NOSUID, MS_NOEXEC, MS_NODEV, MS_RDONLY, MS_REC, MS_STRICTAT
 Mount = namedtuple('Mount', ['destination', 'type', 'source', 'flags', 'options'])
 BindMount = namedtuple('BindMount', ['source', 'destination', 'readonly'])
 
+DEFAULT_PATH = ["/usr/sbin", "/usr/bin", "/sbin", "/bin"]
 
 # /tmp, /proc, /sys and /dev are always mounted
 # directly read-write in the sandbox
