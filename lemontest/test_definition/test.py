@@ -11,7 +11,7 @@ import codecs
 import io
 import os
 import sys
-import shlex
+import time
 import subprocess
 import glob
 
@@ -93,7 +93,9 @@ class Test(AbstractTest):
 
             # run pre-compile checker and commands
             if not self.run_pre_compile_checkers():
-                self.explanation = f"{not_run_description} because {self.colored('check failed', 'red')}"
+                # only replace explanation if not already set
+                if not self.explanation:
+                    self.explanation = f"{not_run_description} because {self.colored('check failed', 'red')}"
                 self.test_passed = False
                 return False
 
@@ -106,7 +108,21 @@ class Test(AbstractTest):
 
             # run compile
             if not self.run_compilers():
-                self.explanation = f"{not_run_description} because {self.colored('compilation failed', 'red')}"
+                # only replace explanation if not already set
+                if not self.explanation:
+                    self.explanation = f"{not_run_description} because {self.colored('compilation failed', 'red')}"
+                self.test_passed = False
+                return False
+
+            # exit to old_dir for linking and setup
+            if file_dir:
+                os.chdir(old_dir)
+
+            # link correct program to root
+            if not self.link_programs_and_setup(file_dir):
+                # only replace explanation if not already set
+                if not self.explanation:
+                    self.explanation = f"{not_run_description} because {self.colored('linking or setup failed', 'red')}"
                 self.test_passed = False
                 return False
 
@@ -118,15 +134,8 @@ class Test(AbstractTest):
             if file_dir:
                 os.chdir(old_dir)
 
-        # TODO: symlink or copy files to test root
-
-    def run_test(self, compile_command: str = ""):
+    def run_test(self):
         """
-        if self.debug:
-            print(
-                f'run_test(compile_command="{compile_command}", command="{self.command}")\n'
-            )
-
         self.set_environ()
 
         for attempt in range(3):
@@ -147,11 +156,15 @@ class Test(AbstractTest):
             self.stdout = codecs.decode(stdout, "UTF-8", errors="replace")
         else:
             self.stdout = stdout
+        
+        print(self.stdout)
 
         if self.parameters["unicode_stderr"]:
             self.stderr = codecs.decode(stderr, "UTF-8", errors="replace")
         else:
             self.stderr = stderr
+
+        print(self.stderr)
         """
         pass
 
@@ -245,14 +258,14 @@ class Test(AbstractTest):
 
             # check that compiled program actually exists
             if not os.path.exists(program):
-                self.explanation = self.colored(f"compiled {program} could not be found after compilation", "red")
+                self.explanation = self.colored(f"compiled '{program}' could not be found after compilation", "red")
                 return False
 
             # chmod program to be executable (rwx)
             try:
                 os.chmod(program, 0o700)
             except:
-                self.explanation = self.colored(f"compiled {program} could not be chmod u+rwx", "red")
+                self.explanation = self.colored(f"compiled '{program}' could not be chmod u+rwx", "red")
                 return False
 
             # rename program to unique name
@@ -260,8 +273,49 @@ class Test(AbstractTest):
             try:
                 os.rename(program, unique_name)
             except OSError as err:
-                self.explanation = self.colored(f"compiled {program} could not be renamed to {unique_name}", "red")
+                self.explanation = self.colored(f"compiled '{program}' could not be renamed to '{unique_name}'", "red")
                 return False
+
+        return True
+
+    def link_programs_and_setup(self, file_dir: Path = None):
+        program = self.parameters["program"]
+        for compile_command in self.parameters["compile_commands"]:
+            # check if program to be linked exists
+            unique_name = get_unique_program_name(program, compile_command, self.test_files)
+            file_path = file_dir.joinpath(unique_name).resolve()
+            if not os.path.exists(file_path):
+                self.explanation = self.colored(f"compiled '{file_path}' could not be found for linking", "red")
+                return False
+            
+            # link program
+            # if link already exists to correct target, skip
+            if os.path.exists(program) and Path(os.readlink(program)).resolve() == file_path:
+                continue
+            # delete link (but only if it's a link)
+            if os.path.islink(program):
+                os.unlink(program)
+            # create link if it doesn't exist
+            if not os.path.exists(program):
+                os.symlink(file_path, program)
+            # ensure link created is correct
+            if not os.path.exists(program) or Path(os.readlink(program)).resolve() != file_path:
+                self.explanation = self.colored(f"linking between '{program}' and '{file_path}' failed", "red")
+                return False
+
+        # run any setup_command
+        setup_command = self.parameters["setup_command"]
+        if setup_command:
+            output = io.StringIO()
+            if not run_support_command(
+                setup_command,
+                file=output,
+                debug=self.debug
+            ):
+                self.stdout = output.getvalue()
+                output.close()
+                return False
+            output.close()
 
         return True
 
