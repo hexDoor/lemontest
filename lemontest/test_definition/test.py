@@ -1,7 +1,7 @@
 from classes.test import AbstractTest
 from .subprocess_with_resource_limits import run
 
-from typing import List
+from typing import List, Dict, Any, Union
 
 from termcolor import colored as termcolor_colored
 from collections import defaultdict
@@ -93,13 +93,23 @@ class Test(AbstractTest):
 
             # run pre-compile checker and commands
             if not self.run_pre_compile_checkers():
-                self.explanation = f"{not_run_description} because {self.colored('check failed')}"
+                self.explanation = f"{not_run_description} because {self.colored('check failed', 'red')}"
                 self.test_passed = False
                 return False
 
-            # TODO: run compile
-            #subprocess.run(["ls", "-l"])
-            #raise Exception("kek")
+            # check missing files
+            missing_files = [f for f in self.files if not glob.glob(f)]
+            if missing_files:
+                self.explanation = f"{not_run_description} because these files are missing: {self.colored(' '.join(missing_files), 'red')}"
+                self.test_passed = False
+                return False
+
+            # run compile
+            if not self.run_compilers():
+                self.explanation = f"{not_run_description} because {self.colored('compilation failed', 'red')}"
+                self.test_passed = False
+                return False
+
             return True
         except:
             self.test_passed = False
@@ -197,11 +207,81 @@ class Test(AbstractTest):
 
         return True
 
+    def run_compilers(self):
+        """
+        run any compilers specified for the the test
+        this code is a critical section and should be made mutually exclusive
+        return False iff any compiler fails, True otherwise
+        """
+        # get compile commands
+        compile_commands = self.parameters["compile_commands"]
+        # TODO: multi_language_support for autotests (autotest accepting multiple languages)
+        # low priority
+        if not compile_commands:
+            return True
+
+        # execute compilation
+        program = self.parameters["program"]
+        for compile_command in compile_commands:
+            # check if program has already been compiled and skip
+            unique_name = get_unique_program_name(program, compile_command, self.test_files)
+            if os.path.exists(unique_name):
+                continue
+
+            # run compile
+            arguments = [] if self.parameters["compiler_args"] else self.test_files
+            output = io.StringIO()
+            if not run_support_command(
+                compile_command,
+                arguments=arguments,
+                unlink=program,
+                file=output,
+                debug=self.debug
+            ):
+                self.stdout = output.getvalue()
+                output.close()
+                return False
+            output.close()
+
+            # check that compiled program actually exists
+            if not os.path.exists(program):
+                self.explanation = self.colored(f"compiled {program} could not be found after compilation", "red")
+                return False
+
+            # chmod program to be executable (rwx)
+            try:
+                os.chmod(program, 0o700)
+            except:
+                self.explanation = self.colored(f"compiled {program} could not be chmod u+rwx", "red")
+                return False
+
+            # rename program to unique name
+            # default package will have this code made mutually exclusive
+            try:
+                os.rename(program, unique_name)
+            except OSError as err:
+                self.explanation = self.colored(f"compiled {program} could not be renamed to {unique_name}", "red")
+                return False
+
+        return True
+
     def params(self):
         return self.parameters
 
     def passed(self):
         return self.test_passed
+
+
+def get_unique_program_name(program: str, compile_command: Union[List[str], str], test_files: List[str]) -> str:
+        """
+        form a unique program name based on compile arguments
+        so we can have multiple binaries for a program.
+        Contrive clashes possible, but comprehensible names for debugging,
+        """
+        compile_command_str = "_".join(compile_command) if isinstance(compile_command, list) else compile_command
+        compile_command_str = compile_command_str.replace(" ", "_")
+        return program + "." + "__".join([compile_command_str] + test_files).replace("/", "___")
+
 
 def run_support_command(
     command: List[str],
