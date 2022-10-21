@@ -33,7 +33,7 @@ def execute_autotest():
     )
     failed_tests = [test for test in processed_tests if not test.passed()]
     for test in processed_tests:
-        print(f"{test.explanation} - {test.passed()}")
+        print(test)
     if not failed_tests:
         print(colored("All Tests Passed", "green"))
         return 0

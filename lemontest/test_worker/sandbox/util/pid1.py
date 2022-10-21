@@ -8,9 +8,10 @@ from pathlib import Path
 
 import signal
 import os
+import stat
 
 from . import libc
-from .config import CONTAINER_MOUNTS, BindMount
+from .config import CONTAINER_MOUNTS, CONTAINER_DEVICE_NODES, BindMount
 
 class PID1:
     def __init__(self, root_dir, isolate_networking, debug, bind_mounts):
@@ -44,8 +45,8 @@ class PID1:
         signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
     @classmethod
-    def create_mount_target(cls, source, destination):
-        if source.is_file():
+    def create_mount_target(cls, source, destination, is_device_node=False):
+        if source.is_file() or is_device_node:
             if destination.is_symlink():
                 destination.unlink()
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -97,6 +98,45 @@ class PID1:
                 print(f"Mounting {m}")
             libc.mount(m.source, m.destination, m.type, m.flags, options)
 
+    # keeping this in the event that mknod becomes available in user namespaces
+    # in the meantime, the only possibility is to bind mount from the host machine
+    def create_device_node(self, name, major, minor, mode, *, is_block_device=False):
+        if is_block_device:
+            device_type = stat.S_IFBLK
+        else:
+            device_type = stat.S_IFCHR
+        nodepath = Path("/dev", name)
+        # FIXME: This won't work as mknod requires superuser (not possible even with unshare)
+        os.mknod(str(nodepath), mode=device_type, device=os.makedev(major, minor))
+        # A separate chmod is necessary, because mknod (undocumentedly) takes umask into account when creating
+        nodepath.chmod(mode=mode)
+
+    def bind_device_node(self, source, destination, readonly):
+        # at this point, root is mounted as /old_root
+        src_nodepath = Path("/old_root/dev", source)
+        dst_nodepath = Path("/dev", destination)
+        # check if the source actually exists (Issue picked up in Arch with missing /lib32)
+        if not src_nodepath.exists():
+            if self.debug:
+                print(f"WARNING: BindMount Skipped - '{src_nodepath}' does not exist")
+            return
+
+        self.create_mount_target(src_nodepath, dst_nodepath, True)
+        if self.debug:
+            print(f"Device Bind Mounting BindMount({src_nodepath}, {dst_nodepath}, {readonly})")
+        libc.mount(src_nodepath, dst_nodepath, None, libc.MS_BIND | libc.MS_REC , None)
+        if readonly:
+            # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
+            # which is why we have to make the bind mount read-only in a separate call.
+            # See https://lwn.net/Articles/281157/
+            flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_REC | libc.MS_RDONLY
+            libc.mount(Path(), dst_nodepath, None, flags, None)
+
+    def create_default_dev_nodes(self):
+        for d in CONTAINER_DEVICE_NODES:
+            #self.create_device_node(have args here)
+            self.bind_device_node(d.source, d.destination, d.readonly)
+
     def umount_old_root(self):
         libc.umount2('/old_root', libc.MNT_DETACH)
         os.rmdir('/old_root')
@@ -128,6 +168,7 @@ class PID1:
         unshare_process(self.isolate_networking)
         self.setup_root_mount()
         self.mount_defaults()
+        self.create_default_dev_nodes()
         self.umount_old_root()
 
     def exit(self):

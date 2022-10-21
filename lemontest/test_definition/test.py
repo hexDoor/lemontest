@@ -73,7 +73,8 @@ class Test(AbstractTest):
 
 
     def __str__(self):
-        return f"Test({self.label}, {self.program}, {self.command})"
+        status = self.colored("passed", "green") if self.test_passed else self.colored("failed", "red")
+        return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # preprocess is a critical section
     # ensure this via a mutex lock
@@ -135,8 +136,7 @@ class Test(AbstractTest):
                 os.chdir(old_dir)
 
     def run_test(self):
-        """
-        self.set_environ()
+        #self.set_environ()
 
         for attempt in range(3):
             if self.debug:
@@ -156,17 +156,13 @@ class Test(AbstractTest):
             self.stdout = codecs.decode(stdout, "UTF-8", errors="replace")
         else:
             self.stdout = stdout
-        
-        print(self.stdout)
+        #print(f"{self.label} stdout - {self.stdout} - expected: {self.expected_stdout}")
 
         if self.parameters["unicode_stderr"]:
             self.stderr = codecs.decode(stderr, "UTF-8", errors="replace")
         else:
             self.stderr = stderr
-
-        print(self.stderr)
-        """
-        pass
+        #print(f"{self.label} stderr - {self.stderr} - expected: {self.expected_stderr}")
 
     # TODO: add in legacy postprocessing
     def postprocess(self):

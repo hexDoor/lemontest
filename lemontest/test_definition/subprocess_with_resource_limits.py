@@ -6,6 +6,8 @@
 #
 # It was originally written for Python 2
 # Recent versions of Python 3 may allow this code to be rewrritten and much simplified
+# implements fix for https://github.com/COMP1511UNSW/autotest/issues/32
+# 
 #
 
 import asyncio, locale, re, os, resource, signal, subprocess, sys, tempfile, threading
@@ -27,8 +29,7 @@ def run(command, **parameters):
     return output
 
 
-@asyncio.coroutine
-def run_coroutine(
+async def run_coroutine(
     loop,
     command,
     stdin=None,
@@ -107,7 +108,7 @@ def run_coroutine(
         stdin=stdin_stream,
     )
 
-    transport, protocol = yield from process
+    transport, protocol = await process
     errors = []
     if max_real_seconds:
 
@@ -132,7 +133,7 @@ def run_coroutine(
         timer.start()
     # Wait for the subprocess exit using the process_exited() method
     # of the protocol
-    yield from exit_future
+    await exit_future
     if max_real_seconds:
         timer.cancel()
     transport.close()
