@@ -8,6 +8,9 @@
 # Recent versions of Python 3 may allow this code to be rewrritten and much simplified
 # implements fix for https://github.com/COMP1511UNSW/autotest/issues/32
 # 
+# performance fix by no longer waiting for stdout and stderr to close after subprocess
+# declares that it has exited
+# saves 10+ seconds of execution when run in container (10s delay until fd close callback triggers)
 #
 
 import asyncio, locale, re, os, resource, signal, subprocess, sys, tempfile, threading
@@ -194,7 +197,11 @@ class SubprocessProtocol(asyncio.SubprocessProtocol):
     def process_exited(self):
         if self.debug > 1:
             print("process_exited", file=sys.stderr)
-        self.finished[0] = True
+        # ideally wait until the fd's are closed but
+        # awaiting for each fd to be closed puts a
+        # very large (10 second +) delay to process_exit
+        # fd's should be closed at exit so this seems unnecessary
+        self.finished = [True, True, True]
         self.check_everything_finished()
 
     def check_everything_finished(self):

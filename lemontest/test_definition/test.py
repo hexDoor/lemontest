@@ -73,7 +73,13 @@ class Test(AbstractTest):
 
 
     def __str__(self):
-        status = self.colored("passed", "green") if self.test_passed else self.colored("failed", "red")
+        status = None
+        if self.test_passed:
+            status = self.colored("passed", "green")
+        elif self.explanation:
+            return self.explanation
+        else:
+            status = self.colored("failed", "red")
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # preprocess is a critical section
