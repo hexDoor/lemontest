@@ -9,7 +9,8 @@ from tempfile import mkdtemp
 import uuid
 import os
 import subprocess
-import time
+import atexit
+import shutil
 
 from .util import libc, pid1
 from .util.config import BindMount
@@ -136,7 +137,11 @@ if __name__ == '__main__':
         "debug": True,
         "worker_read_only_mount_base" : ['/bin', '/etc', '/lib', '/lib32', '/lib64', '/libx32', '/sbin', '/usr', '/home']
     }
-    with Sandbox(Path(mkdtemp()), **params) as sandbox:
+    temp_root = Path(mkdtemp())
+    atexit.register(lambda: shutil.rmtree(temp_root))
+    temp_shrd = Path(mkdtemp())
+    atexit.register(lambda: shutil.rmtree(temp_shrd))
+    with Sandbox(temp_root, temp_shrd, **params) as sandbox:
         print(os.getpid())
         subprocess.run(["ls", "-al"])
         print(os.getpid())

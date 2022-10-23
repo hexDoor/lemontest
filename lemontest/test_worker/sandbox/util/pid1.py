@@ -141,6 +141,13 @@ class PID1:
         libc.umount2('/old_root', libc.MNT_DETACH)
         os.rmdir('/old_root')
 
+    def umount_default_dev_nodes(self):
+        for d in CONTAINER_DEVICE_NODES:
+            dst_nodepath = Path("/dev", d.destination)
+            libc.umount2(dst_nodepath, libc.MNT_DETACH)
+            # device nodes in /dev are files not directories
+            os.remove(dst_nodepath)
+
     def umount_defaults(self):
         for m in CONTAINER_MOUNTS:
             libc.umount2(m.destination, libc.MNT_DETACH)
@@ -160,6 +167,7 @@ class PID1:
             os.rmdir(destination)
     
     def umount_all(self):
+        self.umount_default_dev_nodes()
         self.umount_defaults()
         self.umount_bind_mounts()
 

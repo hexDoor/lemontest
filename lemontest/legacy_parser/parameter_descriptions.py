@@ -1199,6 +1199,7 @@ PARAMETER_LIST += [
             Pathnames of files or directories mounted read-only in the worker
             in addition to files or directories specified by **`worker_read_only_mount_base`**.
             A tuple can be to specify a diferent mount point in the worker.
+            **Note: Files and custom mount points are not yet supported**
         """,
     ),
     Parameter(
@@ -1209,6 +1210,7 @@ PARAMETER_LIST += [
             in addition to files or directories specified by **`worker_read_write_mount_base`**.
             A tuple can be to specify a different mount point in the worker
             `/tmp`, `/proc`, `/sys` and `/dev` are always mounted directly read-write in the worker
+            **Note: Files and custom mount points are not yet supported**
         """,
     ),
     Parameter(
@@ -1227,6 +1229,7 @@ PARAMETER_LIST += [
             Pathnames of files or directories mounted read-only in the worker
             The parameter **`worker_read_only_mount`** should be used to add extra pathnames.<bt>
             This parameter need only be set to stop one of these pathnames being mounted.
+            **Note: Files and custom mount points are not yet supported**
         """,
     )
 ]

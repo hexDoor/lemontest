@@ -48,14 +48,17 @@ class TestWorker(AbstractWorker):
         # available within Sandbox as "/shared" 
         # spawn sandbox runtime context
         with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
+            # run test preprocessing
             pLock.acquire()
             pStatus = test.preprocess(SHARED_DIR_DEST)
             pLock.release()
             if not pStatus:
                 return test
 
+            # execute test
             test.run_test()
 
+            # perform test postprocessing (output checking etc.)
             test.postprocess()
 
         # return processed test
