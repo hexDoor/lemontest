@@ -14,6 +14,7 @@ import sys
 import time
 import subprocess
 import glob
+import re
 
 class Test(AbstractTest):
     # predefined
@@ -142,8 +143,8 @@ class Test(AbstractTest):
                 os.chdir(old_dir)
 
     def run_test(self):
+        # don't update environment as it may break things
         #self.set_environ()
-
         for attempt in range(3):
             if self.debug:
                 print("run_test attempt", attempt)
@@ -170,9 +171,44 @@ class Test(AbstractTest):
             self.stderr = stderr
         #print(f"{self.label} stderr - {self.stderr} - expected: {self.expected_stderr}")
 
-    # TODO: add in legacy postprocessing
     def postprocess(self):
-        # TODO: Failed test reasoning processing here
+        # TODO: perform output comparison (stdout and stderr)
+        # check stdout stream
+        stdout_short_explanation = self.check_stream(
+            self.stdout, self.expected_stdout, "stdout"
+        )
+        if not self.parameters["allow_unexpected_stderr"] or stdout_short_explanation:
+            if (
+                self.parameters["dcc_output_checking"]
+                and "Execution stopped because" in self.stderr
+            ):
+                self.short_explanation = "incorrect output"
+            else:
+                self.short_explanation = self.check_stream(
+                    self.stderr, self.expected_stderr, "stderr"
+                )
+                self.stderr_ok = not self.short_explanation
+
+        self.stdout_ok = not stdout_short_explanation
+
+        if not self.short_explanation:
+            self.short_explanation = stdout_short_explanation
+
+        if not self.short_explanation:
+            self.short_explanation = self.check_files()
+
+        self.test_passed = not self.short_explanation
+
+        # FIXME: put failed_compiler in the long explanation processor?
+        if not self.test_passed:
+            self.failed_compiler = (
+                " ".join(compile_command)
+                if isinstance(compile_command, list)
+                else str(compile_command)
+            )
+        
+
+        
         self.test_passed = True
         pass
 
@@ -329,14 +365,14 @@ class Test(AbstractTest):
 
 
 def get_unique_program_name(program: str, compile_command: Union[List[str], str], test_files: List[str]) -> str:
-        """
-        form a unique program name based on compile arguments
-        so we can have multiple binaries for a program.
-        Contrive clashes possible, but comprehensible names for debugging,
-        """
-        compile_command_str = "_".join(compile_command) if isinstance(compile_command, list) else compile_command
-        compile_command_str = compile_command_str.replace(" ", "_")
-        return program + "." + "__".join([compile_command_str] + test_files).replace("/", "___")
+    """
+    form a unique program name based on compile arguments
+    so we can have multiple binaries for a program.
+    Contrive clashes possible, but comprehensible names for debugging,
+    """
+    compile_command_str = "_".join(compile_command) if isinstance(compile_command, list) else compile_command
+    compile_command_str = compile_command_str.replace(" ", "_")
+    return program + "." + "__".join([compile_command_str] + test_files).replace("/", "___")
 
 
 def run_support_command(
