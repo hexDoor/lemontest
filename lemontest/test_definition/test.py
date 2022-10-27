@@ -176,27 +176,36 @@ class Test(AbstractTest):
         # check stdout stream
         stdout_short_explanation = self.check_stream(
             self.stdout, self.expected_stdout, "stdout"
-        )
+        
+        # only consider stderr if unexpected stderr permitted or stdout issue discovered
         if not self.parameters["allow_unexpected_stderr"] or stdout_short_explanation:
+            # early exit if we have a DCC issue + dcc early exit enabled
             if (
                 self.parameters["dcc_output_checking"]
                 and "Execution stopped because" in self.stderr
             ):
                 self.short_explanation = "incorrect output"
+            # otherwise, check stderr stream and declare if stderr_ok
             else:
                 self.short_explanation = self.check_stream(
                     self.stderr, self.expected_stderr, "stderr"
                 )
                 self.stderr_ok = not self.short_explanation
 
+        # stdout is ok if no stdout explanation FIXME: could put this above
         self.stdout_ok = not stdout_short_explanation
 
+        # if there is no current explanation, set it to the stdout explanation
         if not self.short_explanation:
             self.short_explanation = stdout_short_explanation
 
+        # if there was no stdout explanation, check files TODO: what kind of files?
+        # self.parameters["expected_files"] is a list of (pathname, expected content)
+        # checks all files for the expected content
         if not self.short_explanation:
             self.short_explanation = self.check_files()
 
+        # the test passes if there is no explanation for the error TODO: possibly have a better condition
         self.test_passed = not self.short_explanation
 
         # FIXME: put failed_compiler in the long explanation processor?
@@ -208,7 +217,7 @@ class Test(AbstractTest):
             )
         
 
-        
+        # TODO: remove me
         self.test_passed = True
         pass
 
