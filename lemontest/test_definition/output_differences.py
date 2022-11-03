@@ -4,13 +4,16 @@ import re
 import subprocess
 
 
-def make_string_canonical(raw_str, keep_all_lines=False, debug=False):
+def make_string_canonical(raw_str, canonical_translator, parameters, keep_all_lines=False):
+    debug = parameters["debug"]
     s = re.sub("\r\n?", "\n", raw_str)
-    filter = self.parameters.get("postprocess_output_command", None)
+    filter = parameters.get("postprocess_output_command", None)
 
     if filter:
         if debug:
             print(f"postprocess_output_command={filter} str='{s}'")
+        # FIXME: Design break with run_suppport_command which this is a support command
+        # I don't see a reasonable way to put this in the test without lots of reorg
         p = subprocess.run(
             filter,
             stdout=subprocess.PIPE,
@@ -31,17 +34,18 @@ def make_string_canonical(raw_str, keep_all_lines=False, debug=False):
         if debug:
             print(f"after filter s='{s}'")
 
-    if self.parameters["ignore_case"]:
+    if parameters["ignore_case"]:
         s = s.lower()
-    s = s.translate(self.canonical_translator)
-    if self.parameters["ignore_blank_lines"] and not keep_all_lines:
+    s = s.translate(canonical_translator)
+    if parameters["ignore_blank_lines"] and not keep_all_lines:
         s = re.sub(r"\n\s*\n", "\n", s)
         s = re.sub(r"^\n+", "", s)
-    if self.parameters["ignore_trailing_whitespace"]:
+    if parameters["ignore_trailing_whitespace"]:
         s = re.sub(r"[ \t]+\n", "\n", s)
-    if self.debug > 1:
+    if debug:
         print(f"make_string_canonical('{raw_str}') -> '{s}'")
     return s
 
-def compare_strings(actual, expected):
-    return make_string_canonical(actual) == make_string_canonical(expected)
+
+def compare_strings(actual, expected, canonical_translator, parameters):
+    return make_string_canonical(actual, canonical_translator, parameters) == make_string_canonical(expected, canonical_translator, parameters)
