@@ -42,6 +42,7 @@ class PID1:
         # Unfortunately, that means we won't be able to get any exit codes
         # if we continue with this.
         # As such, we have to go with SIG_DFL in order to get the exit codes we need
+        #signal.signal(signal.SIGCHLD, signal.SIG_IGN)
         signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
     @classmethod
