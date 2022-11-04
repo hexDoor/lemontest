@@ -1,0 +1,76 @@
+#!/web/cs1521/bin/python3
+
+import re, sys
+
+def main():
+	(passed, failed, not_run) = parse_automarking_results()
+	if not passed + failed + not_run:
+		return
+
+	#print(automarking_results_file, passed, failed, not_run, mark)
+
+	mark = piece_wise_linear(passed,
+		{ 32: 100.0
+		, 24:  80.0
+		, 16:  60.0
+		,  4:  40.0
+		,  1:  25.0
+		,  0:   0.0
+		})
+	print(f"""
+Testing Summary
+
+{passed} tests passed, {failed} tests failed, {not_run} tests not run
+
+Your performance mark was produced from the number of tests passed,
+and translated using a piece-wise linear formula consistent with the
+indicative marking scheme in the assignment specification.
+
+Mark for automarking tests: {0.8*mark:.1f}/80.0
+""")
+	if mark < 50:
+		print("""
+Tutors will manually adjust marks of assignments with low automarking
+marks, to ensure the overall mark for the assignment is appropriate.
+""")
+	return 0.8*mark
+
+def parse_automarking_results(stream=sys.stdin):
+	summary_lines = []
+	for line in sys.stdin:
+		sys.stdout.write(line)
+		if re.match(r'^\d+ tests passed ', line):
+			summary_lines.append(line)
+	if not summary_lines:
+		return (0, 0, 0)
+	summary_line = summary_lines[-1]
+	summary_line = re.sub(r'\s+', ' ', summary_line)
+	(passed, failed, not_run) = (0, 0, 0)
+	m = re.search(r'(\d+) tests passed', summary_line)
+	if m:
+		passed = int(m.group(1))
+	m = re.search(r'(\d+) tests failed', summary_line)
+	if m:
+		failed = int(m.group(1))
+	m = re.search(r'(\d+) tests could', summary_line)
+	if m:
+		not_run = int(m.group(1))
+	return (passed, failed, not_run)
+
+def piece_wise_linear(x, mapping):
+	if isinstance(mapping, dict):
+		mapping = mapping.items()
+	mapping = sorted(mapping)
+	x0, mapped_x0 = mapping.pop(0)
+	if x < x0:
+		return mapped_x0
+	while mapping:
+		x1, mapped_x1 = mapping.pop(0)
+		if x <= x1:
+			return mapped_x0 + (x - x0)/(x1 - x0) * (mapped_x1 - mapped_x0)
+		x0, mapped_x0 = x1, mapped_x1
+	return mapped_x0
+
+
+if __name__ == "__main__":
+	main()

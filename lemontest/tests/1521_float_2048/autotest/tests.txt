@@ -1,6 +1,7 @@
 # generated from tests.py by /home/cs1521/public_html/19T3/scripts//autotest_update_from_solution
 
 max_cpu=30
+worker_count=4
 compiler_args=-Dmain=_main autotest_float_2048.c float_2048.c -o float_2048
 files=float_2048.c
 checkers=./check.sh

@@ -1,0 +1,34 @@
+
+max_cpu=30
+command=1521 mipsy ackermann.s
+files=ackermann.s
+worker_read_only_mount=["/home/cs1521/bin"]
+worker_count=6
+
+
+0 description="Ackermann(0, 0)" stdin="0\n0\n"
+1 description="Ackermann(0, 1)" stdin="0\n1\n"
+2 description="Ackermann(0, 2)" stdin="0\n2\n"
+3 description="Ackermann(1, 0)" stdin="1\n0\n"
+4 description="Ackermann(1, 1)" stdin="1\n1\n"
+5 description="Ackermann(1, 2)" stdin="1\n2\n"
+6 description="Ackermann(2, 0)" stdin="2\n0\n"
+7 description="Ackermann(2, 1)" stdin="2\n1\n"
+8 description="Ackermann(2, 2)" stdin="2\n2\n"
+9 description="Ackermann(3, 0)" stdin="3\n0\n"
+10 description="Ackermann(3, 1)" stdin="3\n1\n"
+11 description="Ackermann(3, 2)" stdin="3\n2\n"
+12 description="Ackermann(4, 0)" stdin="4\n0\n"
+0 expected_stdout='Enter m: Enter n: Ackermann(0, 0) = 1\n'
+1 expected_stdout='Enter m: Enter n: Ackermann(0, 1) = 2\n'
+2 expected_stdout='Enter m: Enter n: Ackermann(0, 2) = 3\n'
+3 expected_stdout='Enter m: Enter n: Ackermann(1, 0) = 2\n'
+4 expected_stdout='Enter m: Enter n: Ackermann(1, 1) = 3\n'
+5 expected_stdout='Enter m: Enter n: Ackermann(1, 2) = 4\n'
+6 expected_stdout='Enter m: Enter n: Ackermann(2, 0) = 3\n'
+7 expected_stdout='Enter m: Enter n: Ackermann(2, 1) = 5\n'
+8 expected_stdout='Enter m: Enter n: Ackermann(2, 2) = 7\n'
+9 expected_stdout='Enter m: Enter n: Ackermann(3, 0) = 5\n'
+10 expected_stdout='Enter m: Enter n: Ackermann(3, 1) = 13\n'
+11 expected_stdout='Enter m: Enter n: Ackermann(3, 2) = 29\n'
+12 expected_stdout='Enter m: Enter n: Ackermann(4, 0) = 13\n'

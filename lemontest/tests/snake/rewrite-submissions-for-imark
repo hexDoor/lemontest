@@ -1,0 +1,26 @@
+
+set -e
+
+find . -name submission.tar |
+while read i
+do
+	pushd $(dirname $i)
+	if [ -e submission.good.tar ]
+	then
+		tar -xf submission.good.tar
+	else
+		tar -xf submission.tar
+	fi
+
+	expand -t4 <snake.s >snake-tw4.s
+	expand -t8 <snake.s >snake-tw8.s
+	{
+		diff --unified --ignore-all-space --expand-tabs \
+			/web/cs1521/21T2/activities/snake/files.cp/snake.s \
+			snake.s \
+		> snake.s.diff || true
+	}
+
+	tar -czf submission.tar snake.s snake-tw4.s snake-tw8.s snake.s.diff
+	popd
+done
