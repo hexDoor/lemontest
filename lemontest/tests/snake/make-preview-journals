@@ -1,9 +1,0 @@
-
-imark find ass1_snake '*' '*' |
-while read a b c
-do
-	echo $a $b $c
-	imark cat $a $b $c \
-	| sed -e '/^# snake/,/^# Marks/{d;};' \
-	> $OUT/$b/$a.$c
-done
