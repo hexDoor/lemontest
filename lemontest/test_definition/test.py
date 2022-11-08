@@ -203,7 +203,10 @@ class Test(AbstractTest):
             # execute test with specific compile_command
             # run in serial to minimise potential issues with sandboxing (complete autotest overhaul may be required for this)
             # TODO: consider running this in parallel with sandboxing but seems excessive for what will usually be one compile command
+            start = time.time()
             individual_test.run_individual_test(compile_command=compile_command_str)
+            end = time.time()
+            print(f"{self.label} {self.parameters['description']} {compile_command_str} - {end-start}")
             self.individual_tests.append(individual_test)
 
             # early exit if running into an obvious error
@@ -319,7 +322,6 @@ class Test(AbstractTest):
         """
         run any checkers specified for the files in the test
         plus any pre_compile_command
-        if they haven't been run before
         on error, place stdout of script into test stdout
         return False iff any checker fails, True otherwise
         """
@@ -576,6 +578,17 @@ class Test(AbstractTest):
         # checks all files for the expected content
         if not self.short_explanation:
             self.short_explanation = self.check_files()
+
+    def stdin_file_name(self):
+        return ""
+        # fix-me for reproduce commands we should generate a filename in some circumstances
+        if not self.stdin_file:
+            return self.stdin_file
+        if self.stdin_file[0] == "/":
+            return self.stdin_file
+        path = os.path.realpath(self.autotest_dir + "/" + self.stdin_file)
+        path = re.sub(r"/tmp_amd/\w+/export/\w+/\d/(\w+)", r"/home/\1", path)
+        return path
 
     # Get Long Explanation of what went wrong in the test
     # output differences and how to recreate the test
