@@ -201,6 +201,7 @@ class SubprocessProtocol(asyncio.SubprocessProtocol):
         # awaiting for each fd to be closed puts a
         # very large (10 second +) delay to process_exit
         # fd's should be closed at exit so this seems unnecessary
+        #self.finished[0] = True
         self.finished = [True, True, True]
         self.check_everything_finished()
 

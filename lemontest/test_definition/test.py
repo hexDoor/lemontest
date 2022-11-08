@@ -208,7 +208,7 @@ class Test(AbstractTest):
 
             # early exit if running into an obvious error
             # stderr_ok available from processing short_explanation (runtime class member)
-            if not individual_test.stderr_ok and not self.parameters["allowed_unexpected_stderr"]:
+            if not individual_test.stderr_ok and not self.parameters["allow_unexpected_stderr"]:
                 break
 
         return True
@@ -576,7 +576,8 @@ class Test(AbstractTest):
         if not self.short_explanation:
             self.short_explanation = self.check_files()
 
-    # TODO: Port Long Explanation
+    # Get Long Explanation of what went wrong in the test
+    # output differences and how to recreate the test
     def get_long_explanation(self):
         if self.debug:
             print(
