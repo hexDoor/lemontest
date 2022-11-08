@@ -1,3 +1,3 @@
 STDIN = "stdin"
-STDOUT = "stdout"
+STDOUT = "output"
 STDERR = "stderr"

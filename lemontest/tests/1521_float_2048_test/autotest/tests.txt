@@ -1,0 +1,21 @@
+# generated from tests.py by /home/cs1521/public_html/19T3/scripts//autotest_update_from_solution
+
+max_cpu=30
+worker_count=4
+compiler_args=-Dmain=_main autotest_float_2048.c float_2048.c -o float_2048
+files=float_2048.c
+checkers=./check.sh
+
+
+0 command=./float_2048 8 expected_stdout="16384\n"
+1 command=./float_2048 8 expected_stdout="16384\n"
+2 command=./float_2048 3.99 expected_stdout="8171.52002\n"
+3 command=./float_2048 0.748 expected_stdout="1531.90405\n"
+4 command=./float_2048 -0.749 expected_stdout="-1533.95203\n"
+5 command=./float_2048 4.298765432e-31 expected_stdout="8.80387163e-28\n"
+6 command=./float_2048 9.91234567e+37 expected_stdout="inf\n"
+7 command=./float_2048 inf expected_stdout="inf\n"
+8 command=./float_2048 -inf expected_stdout="-inf\n"
+9 command=./float_2048 0.0 expected_stdout="0\n"
+10 command=./float_2048 -0.0 expected_stdout="-0\n"
+11 command=./float_2048 NaN expected_stdout="nan\n"
