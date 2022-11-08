@@ -31,11 +31,17 @@ def execute_autotest():
         if parser.params()["colorize_output"]
         else lambda x, *a, **kw: x
     )
-    failed_tests = [test for test in processed_tests if not test.passed()]
+    failed_tests_count = 0
+    seen_errors = {}
+    # i really don't like this personally but getting "same as test blah" requires this
     for test in processed_tests:
-        print(test)
-    pass_str = colored(f"{len(processed_tests) - len(failed_tests)} tests passed", "green")
-    fail_str = colored(f"{len(failed_tests)} tests failed", "red")
+        if not test.passed():
+            print(test.explanation(seen_errors))
+            failed_tests_count += 1
+        else:
+            print(test)
+    pass_str = colored(f"{len(processed_tests) - failed_tests_count} tests passed", "green")
+    fail_str = colored(f"{failed_tests_count} tests failed", "red")
     print(f"{pass_str} {fail_str}")
 
     # TODO: post autotest cleanup/misc actions

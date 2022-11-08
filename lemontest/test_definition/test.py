@@ -89,7 +89,6 @@ class Test(AbstractTest):
         self.long_explanation = None
         self.test_passed = None
 
-
     def __str__(self):
         # In the event the test isn't run before being printed
         if self.test_passed is None:
@@ -285,6 +284,28 @@ class Test(AbstractTest):
         self.stderr = individual_test.stderr
         self.short_explanation = individual_test.short_explanation
         self.long_explanation = individual_test.get_long_explanation()
+
+    def params(self):
+        return self.parameters
+
+    def passed(self):
+        return self.test_passed
+
+    def explanation(self, previous_errors: Dict[str, Any]):
+        # If test has passed, refer to __str__ function
+        if self.test_passed:
+            return str(self)
+        
+        # check if error has been seen before and minimise error
+        status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
+        reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
+        if reduced_long_explanation in previous_errors:
+            status += f" - same as Test {previous_errors[reduced_long_explanation]}"
+        elif self.long_explanation:
+            status += "\n"
+            status += self.long_explanation
+        previous_errors.setdefault(reduced_long_explanation, self.label)
+        return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # helper functions
     def set_environ(self):
@@ -519,12 +540,6 @@ class Test(AbstractTest):
                 self.file_expected = expected_contents
                 self.file_actual = actual_contents
                 return short_explanation
-
-    def params(self):
-        return self.parameters
-
-    def passed(self):
-        return self.test_passed
 
     def process_short_explanation(self):
         # perform output comparison (stdout and stderr)

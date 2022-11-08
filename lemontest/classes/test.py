@@ -82,3 +82,11 @@ class AbstractTest:
         Returns: bool
         """
         pass
+
+
+    def explanation(self):
+        """
+        Returns an explanation if the test failed, otherwise returns None
+
+        Returns: Union[str, None]
+        """
