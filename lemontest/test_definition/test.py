@@ -298,13 +298,14 @@ class Test(AbstractTest):
         
         # check if error has been seen before and minimise error
         status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
-        reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
-        if reduced_long_explanation in previous_errors:
-            status += f" - same as Test {previous_errors[reduced_long_explanation]}"
-        elif self.long_explanation:
-            status += "\n"
-            status += self.long_explanation
-        previous_errors.setdefault(reduced_long_explanation, self.label)
+        if self.long_explanation:
+            reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
+            if reduced_long_explanation in previous_errors:
+                status += f" - same as Test {previous_errors[reduced_long_explanation]}"
+            else:
+                status += "\n"
+                status += self.long_explanation
+            previous_errors.setdefault(reduced_long_explanation, self.label)
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # helper functions
