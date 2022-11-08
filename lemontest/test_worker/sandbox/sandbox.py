@@ -134,7 +134,7 @@ class PID1Manager:
 
 if __name__ == '__main__':
     params = {
-        "debug": True,
+        "debug": 3,
         "worker_read_only_mount_base" : ['/bin', '/etc', '/lib', '/lib32', '/lib64', '/libx32', '/sbin', '/usr', '/home']
     }
     temp_root = Path(mkdtemp())

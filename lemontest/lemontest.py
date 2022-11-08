@@ -34,13 +34,9 @@ def execute_autotest():
     failed_tests = [test for test in processed_tests if not test.passed()]
     for test in processed_tests:
         print(test)
-        if not test.passed():
-            print(test.stdout)
-            print(test.stderr)
-    if not failed_tests:
-        print(colored("All Tests Passed", "green"))
-        return 0
-
+    pass_str = colored(f"{len(processed_tests) - len(failed_tests)} tests passed", "green")
+    fail_str = colored(f"{len(failed_tests)} tests failed", "red")
+    print(f"{pass_str} {fail_str}")
 
     # TODO: post autotest cleanup/misc actions
     # TODO: upload to cgi?

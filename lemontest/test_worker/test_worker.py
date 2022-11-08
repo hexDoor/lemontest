@@ -56,7 +56,9 @@ class TestWorker(AbstractWorker):
                 return test
 
             # execute test
-            test.run_test()
+            rStatus = test.run_test(SHARED_DIR_DEST)
+            if not rStatus:
+                return test
 
             # perform test postprocessing (output checking etc.)
             test.postprocess()

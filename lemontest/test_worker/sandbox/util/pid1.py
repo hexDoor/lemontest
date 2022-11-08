@@ -59,13 +59,13 @@ class PID1:
         for source, relative_destination, read_only in self.bind_mounts:
             # check if the source actually exists (Issue picked up in Arch with missing /lib32)
             if not source.exists():
-                if self.debug:
+                if self.debug > 1:
                     print(f"WARNING: BindMount Skipped - '{source}' does not exist")
                 continue
 
             destination = self.root_dir.joinpath(relative_destination)
             self.create_mount_target(source, destination)
-            if self.debug:
+            if self.debug > 1:
                 print(f"Bind Mounting BindMount({source}, {relative_destination}, {read_only})")
             libc.mount(source, destination, None, libc.MS_BIND | libc.MS_REC , None)
             if read_only:
@@ -95,7 +95,7 @@ class PID1:
             if m.options:
                 options = ",".join(m.options)
             m.destination.mkdir(parents=True, exist_ok=True)
-            if self.debug:
+            if self.debug > 1:
                 print(f"Mounting {m}")
             libc.mount(m.source, m.destination, m.type, m.flags, options)
 
@@ -118,12 +118,12 @@ class PID1:
         dst_nodepath = Path("/dev", destination)
         # check if the source actually exists (Issue picked up in Arch with missing /lib32)
         if not src_nodepath.exists():
-            if self.debug:
+            if self.debug > 1:
                 print(f"WARNING: BindMount Skipped - '{src_nodepath}' does not exist")
             return
 
         self.create_mount_target(src_nodepath, dst_nodepath, True)
-        if self.debug:
+        if self.debug > 1:
             print(f"Device Bind Mounting BindMount({src_nodepath}, {dst_nodepath}, {readonly})")
         libc.mount(src_nodepath, dst_nodepath, None, libc.MS_BIND | libc.MS_REC , None)
         if readonly:
@@ -161,7 +161,7 @@ class PID1:
             # everything should be relative to root
             destination = Path("/").joinpath(relative_destination)
             if not destination.exists():
-                if self.debug:
+                if self.debug > 1:
                     print(f"WARNING: Unmount BindMount Skipped - '{destination}' does not exist")
                 continue
             libc.umount2(destination, libc.MNT_DETACH)
@@ -200,7 +200,7 @@ def unshare_process(isolate_networking: bool):
         unshare_flags.append(libc.CLONE_NEWNET)
     libc.unshare(reduce(lambda x, y: x|y, unshare_flags))
 
-def unshare_user(debug: bool):
+def unshare_user(debug: int):
     # uid & gid mapping
     uid = os.getuid()
     gid = os.getgid()
@@ -211,14 +211,14 @@ def unshare_user(debug: bool):
     uidmap = f"0 {uid} 1"
     gidmap = f"0 {gid} 1"
 
-    if debug:
+    if debug > 2:
         print(f"pid1 - unshare_user: uid: {os.getuid()} - gid: {os.getgid()}")
 
     # unshare user namespace
     libc.unshare(libc.CLONE_NEWUSER)
 
     # write uid & gid mapping
-    if debug:
+    if debug > 2:
         print(f"pid1 - unshare_user: writing uidmap = '{uidmap}' => '{uidmapfile}'")
         print(f"pid1 - unshare_user: writing setgroups = 'deny' => '{setgroupsfile}'")
         print(f"pid1 - unshare_user: writing gidmap = '{gidmap}' => '{gidmapfile}'")
@@ -239,5 +239,5 @@ def unshare_user(debug: bool):
     with open(gidmapfile, "w") as gidmap_f:
         gidmap_f.write(gidmap)
 
-    if debug:
+    if debug > 2:
         print(f"pid1 - unshare_user: new uid = {os.getuid()} | new gid = {os.getgid()}")
