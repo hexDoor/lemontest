@@ -203,10 +203,10 @@ class Test(AbstractTest):
             # execute test with specific compile_command
             # run in serial to minimise potential issues with sandboxing (complete autotest overhaul may be required for this)
             # TODO: consider running this in parallel with sandboxing but seems excessive for what will usually be one compile command
-            start = time.time()
+            #start = time.time()
             individual_test.run_individual_test(compile_command=compile_command_str)
-            end = time.time()
-            print(f"{self.label} {self.parameters['description']} {compile_command_str} - {end-start}")
+            #end = time.time()
+            #print(f"{self.label} {self.parameters['description']} {compile_command_str} - {end-start}")
             self.individual_tests.append(individual_test)
 
             # early exit if running into an obvious error
@@ -336,7 +336,7 @@ class Test(AbstractTest):
                     arguments=[filename],
                     debug=self.debug
                 ):
-                    self.stdout = output.getvalue()
+                    self.long_explanation = output.getvalue()
                     output.close()
                     return False
                 output.close()
@@ -349,7 +349,7 @@ class Test(AbstractTest):
                 file=output,
                 debug=self.debug
             ):
-                self.stdout = output.getvalue()
+                self.long_explanation = output.getvalue()
                 output.close()
                 return False
             output.close()
@@ -387,7 +387,7 @@ class Test(AbstractTest):
                 file=output,
                 debug=self.debug
             ):
-                self.stdout = output.getvalue()
+                self.long_explanation = output.getvalue()
                 output.close()
                 return False
             output.close()
@@ -479,7 +479,7 @@ class Test(AbstractTest):
                 file=output,
                 debug=self.debug
             ):
-                self.stdout = output.getvalue()
+                self.long_explanation = output.getvalue()
                 output.close()
                 return False
             output.close()
