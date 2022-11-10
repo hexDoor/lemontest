@@ -296,7 +296,7 @@ class Test(AbstractTest):
 
     def explanation(self, previous_errors: Dict[str, Any]):
         # If test has passed, refer to __str__ function
-        if self.test_passed:
+        if self.test_passed is None or self.test_passed:
             return str(self)
         
         # check if error has been seen before and minimise error
