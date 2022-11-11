@@ -105,7 +105,7 @@ async def run_coroutine(
     else:
         stdin_stream = subprocess.DEVNULL
     process = loop.subprocess_exec(
-        lambda: SubprocessProtocol(exit_future, max_stdout_bytes, max_stderr_bytes),
+        lambda: SubprocessProtocol(exit_future, max_stdout_bytes, max_stderr_bytes, debug),
         *command,
         preexec_fn=set_limits,
         stdin=stdin_stream,
