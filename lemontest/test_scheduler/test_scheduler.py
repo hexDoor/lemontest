@@ -49,10 +49,9 @@ class TestScheduler(AbstractScheduler):
             pLock = Lock()
             # spawn worker pool
             self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
+            # cleanup worker pool at exit (fixes issue with lemontest exiting without fully terminating processes)
+            atexit.register(self.cleanup)
         except Exception as err:
-            # cleanup worker pool
-            if self.worker_pool:
-                self.worker_pool.terminate() # send SIGTERM to worker processes
             die(err)
 
     def __str__(self):
