@@ -19,6 +19,7 @@ import glob
 import tempfile
 import shutil
 import atexit
+import os
 
 """
 import logging
@@ -77,9 +78,14 @@ class TestScheduler(AbstractScheduler):
         req_files_set = set.intersection(
             *[set(test.params()["files"]) for (test, _, _) in tests]
         )
-        missing_files = [f for f in req_files_set if not glob.glob(f, root_dir=self.shared_dir)]
+        # FIXME: root_dir argument is only available in python 3.10
+        # CSE at time of writing is on version 3.9 => have to do things the old fashioned way
+        orig_dir = os.getcwd()
+        os.chdir(self.shared_dir)
+        missing_files = [f for f in req_files_set if not glob.glob(f)] # glob.glob(f, root_dir=self.shared_dir)
         if missing_files:
             die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
+        os.chdir(orig_dir)
 
         # schedule tests for execution and show progress
         # super cursed but it looks nice
