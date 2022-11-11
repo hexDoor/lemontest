@@ -2,10 +2,9 @@
 
 max_cpu=30
 worker_count=4
+worker_read_only_mount=["/home/cs1521", "/web/cs1521"]
 compiler_args=-Dmain=_main autotest_float_2048.c float_2048.c -o float_2048
 files=float_2048.c
-checkers=./check.sh
-
 
 0 command=./float_2048 8 expected_stdout="16384\n"
 1 command=./float_2048 3.99 expected_stdout="8171.52002\n"
