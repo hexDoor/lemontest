@@ -50,11 +50,10 @@ class TestScheduler(AbstractScheduler):
             # spawn worker pool
             self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
         except Exception as err:
-            die(err)
-        finally:
             # cleanup worker pool
             if self.worker_pool:
                 self.worker_pool.terminate() # send SIGTERM to worker processes
+            die(err)
 
     def __str__(self):
         pass
