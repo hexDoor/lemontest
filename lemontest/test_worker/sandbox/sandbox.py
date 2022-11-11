@@ -61,7 +61,7 @@ class Sandbox:
         if self.debug:
             print(f"creating a new sandbox ({self.sandbox_id})")
 
-        # TODO: setup system for proper BindMounts
+        # setup PID 1 manager for sandbox
         self.pid1_manager = PID1Manager(self.root_dir, self.isolate_networking, self.pid1_mountables, self.debug)
 
         # FIXME: rely on delegated cgroups v2 when support matures

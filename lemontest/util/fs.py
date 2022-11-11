@@ -1,14 +1,17 @@
 from .util import die
 
 from pathlib import Path
-from shutil import copy2, copystat
 
 import glob
 import os
 import sys
 import re
-import subprocess
 import shutil
+import atexit
+import pkgutil
+import tempfile
+import tarfile
+import io
 
 # Returns False if expected files are missing, True otherwise.
 def copy_files_to_directory(dir_path: Path, parameters, args):
@@ -93,13 +96,6 @@ def fetch_submission(temp_dir, args):
                     continue
 
 
-def execute(command, print_command=True):
-    if print_command:
-        print(" ".join(command))
-    if subprocess.call(command) != 0:
-        die(f"{command[0]} failed")
-
-
 def copy_directory(src, dst, symlinks=False, ignore=None):
     names = os.listdir(src)
     if ignore is not None:
@@ -111,7 +107,7 @@ def copy_directory(src, dst, symlinks=False, ignore=None):
         os.makedirs(dst)
         # we don't want to copy directory permission if the directory exists already
         try:
-            copystat(src, dst)
+            shutil.copystat(src, dst)
         except OSError:
             pass
     for name in names:
@@ -126,7 +122,32 @@ def copy_directory(src, dst, symlinks=False, ignore=None):
             elif os.path.isdir(srcname):
                 copy_directory(srcname, dstname, symlinks, ignore)
             else:
-                copy2(srcname, dstname)
+                shutil.copy2(srcname, dstname)
         except OSError as why:
             # we don't want to stop if there is an unreadable file - just produce an error
             print("Warning:", why, file=sys.stderr)
+
+
+def cleanup(temp_dir=None, args=None):
+    if args and args.debug >= 10:
+        return
+    if temp_dir and temp_dir.startswith("/tmp/"):
+        shutil.rmtree(temp_dir)
+
+
+def load_embedded_autotest(exercise):
+    """
+    if exercise is found as an embedded tar file
+    explode the tarfile to a temporary directory
+    and return the pathname for tests.txt
+    The script bundle_autotests.sh creates executablkes with embedded autotests.
+    """
+    tar_data = pkgutil.get_data("embedded_autotests", exercise + ".tar")
+    if not tar_data:
+        return None
+    temp_dir = tempfile.mkdtemp()
+    atexit.register(cleanup, temp_dir=temp_dir)
+    buffer = io.BytesIO(tar_data)
+    with tarfile.open(fileobj=buffer, mode="r|xz") as t:
+        t.extractall(temp_dir)
+    return os.path.join(temp_dir, "tests.txt")

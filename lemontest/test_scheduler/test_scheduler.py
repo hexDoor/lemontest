@@ -44,7 +44,6 @@ class TestScheduler(AbstractScheduler):
         )
         try:
             # set the fork start method
-            # TODO: kill windows support at launch (lemontest.py)
             set_start_method('fork')
             # spawn Lock for test preprocessing shared directory access
             pLock = Lock()

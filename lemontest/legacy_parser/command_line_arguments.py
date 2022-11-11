@@ -2,12 +2,12 @@
 
 import argparse, fnmatch, os, re, sys
 from util.util import die
+from util.fs import load_embedded_autotest
 from legacy_parser.parse_test_specification import parse_string
-from legacy_parser.copy_files_to_temp_directory import load_embedded_autotest
 
 # rewrite the extra help
 
-REPO = "https://github.com/COMP1511UNSW/autotest"
+REPO = "https://github.com/hexDoor/lemontest"
 REPO_INFORMATION = (
     f"Test specification documentation & source at: {REPO} - issues welcome"
 )

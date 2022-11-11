@@ -2,7 +2,7 @@ from classes.parser import AbstractParser
 import legacy_parser.command_line_arguments as cmdlineargs
 import legacy_parser.parse_test_specification as parsetestspec
 
-# TODO: Forced Legacy Design Break (thanks legacy parser)
+# FIXME: Forced Legacy Design Break (thanks legacy parser)
 from test_definition.test import Test
 
 class Parser(AbstractParser):
