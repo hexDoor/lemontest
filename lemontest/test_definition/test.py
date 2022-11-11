@@ -1,4 +1,5 @@
 from classes.test import AbstractTest
+from util.util import lambda_function
 from .subprocess_with_resource_limits import run
 from .output_differences import compare_strings, report_difference, report_bit_differences, sanitize_string, insert_hex_slash_x, echo_command_for_string, check_bad_characters
 from .defs import STDOUT, STDERR
@@ -43,6 +44,7 @@ class Test(AbstractTest):
     short_explanation = None
     long_explanation = None
     test_passed = False
+    test_ran = False
 
     # runtime (process_long_explanation function specific)
     stdout_ok = True
@@ -79,7 +81,7 @@ class Test(AbstractTest):
         self.stdin = parameters["stdin"]
 
         self.colored = (
-            termcolor_colored if parameters["colorize_output"] else lambda x, *a, **kw: x
+            termcolor_colored if parameters["colorize_output"] else lambda_function
         )
         self.test_files = None
         self.individual_tests = None
@@ -88,6 +90,7 @@ class Test(AbstractTest):
         self.short_explanation = None
         self.long_explanation = None
         self.test_passed = None
+        self.test_ran = None
 
     def __str__(self):
         # In the event the test isn't run before being printed
@@ -97,10 +100,14 @@ class Test(AbstractTest):
         if self.test_passed:
             status = self.colored("passed", "green")
         else:
-            status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
-            if self.long_explanation:
-                status += "\n"
-                status += self.long_explanation
+            # tests/checker enforced behaviour for anything that did not get run
+            if not self.test_ran:
+                status = self.short_explanation
+            else:
+                status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
+                if self.long_explanation:
+                    status += "\n"
+                    status += self.long_explanation
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # preprocess is a critical section
@@ -214,6 +221,8 @@ class Test(AbstractTest):
             if not individual_test.stderr_ok and not self.parameters["allow_unexpected_stderr"]:
                 break
 
+        # set test_ran status to true
+        self.test_ran = True
         return True
     
     def run_individual_test(self, compile_command: Union[List[str], str] = ""):
@@ -294,21 +303,29 @@ class Test(AbstractTest):
     def passed(self):
         return self.test_passed
 
+    def run_successful(self):
+        return self.test_ran
+
     def explanation(self, previous_errors: Dict[str, Any]):
         # If test has passed, refer to __str__ function
         if self.test_passed is None or self.test_passed:
             return str(self)
-        
-        # check if error has been seen before and minimise error
-        status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
-        if self.long_explanation:
-            reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
-            if reduced_long_explanation in previous_errors:
-                status += f" - same as Test {previous_errors[reduced_long_explanation]}"
-            else:
-                status += "\n"
-                status += self.long_explanation
-            previous_errors.setdefault(reduced_long_explanation, self.label)
+
+        # tests/checker enforced behaviour for anything that did not get run
+        status = ""
+        if not self.test_ran:
+            status = self.short_explanation
+        else:
+            # check if error has been seen before and minimise error
+            status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
+            if self.long_explanation:
+                reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
+                if reduced_long_explanation in previous_errors:
+                    status += f" - same as Test {previous_errors[reduced_long_explanation]}"
+                else:
+                    status += "\n"
+                    status += self.long_explanation
+                previous_errors.setdefault(reduced_long_explanation, self.label)
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # helper functions

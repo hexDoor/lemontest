@@ -6,7 +6,7 @@ Todo:
     * This code needs extensive rewriting (better organisation -> modularisation)
 """
 
-from util.util import InternalError
+from util.util import InternalError, lambda_function
 from .defs import STDOUT, STDERR
 
 from termcolor import colored as termcolor_colored
@@ -155,7 +155,7 @@ def explain_output_differences(
 ):
     max_lines_shown = int(max_lines_shown)
     max_line_length_shown = int(max_line_length_shown)
-    colored = termcolor_colored if parameters["colorize_output"] else lambda x, *a, **kw: x
+    colored = termcolor_colored if parameters["colorize_output"] else lambda_function
 
     if canonical_expected and not actual:
         if name == STDOUT:

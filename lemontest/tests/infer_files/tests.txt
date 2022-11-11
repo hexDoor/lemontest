@@ -1,4 +1,4 @@
-files=autotest.py
+files=lemontest.py
 arguments=-a autotest
 # stop minor updates to autotest output breaking test
 ignore_blank_lines=1

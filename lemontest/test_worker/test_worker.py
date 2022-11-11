@@ -1,5 +1,6 @@
 from classes.test_worker import AbstractWorker
 from classes.test import AbstractTest
+from util.util import lambda_function
 from pathlib import Path
 from termcolor import colored as termcolor_colored
 from multiprocessing import Lock
@@ -27,7 +28,7 @@ class TestWorker(AbstractWorker):
         self.colored = (
             termcolor_colored
             if parameters["colorize_output"]
-            else lambda x, *a, **kw: x
+            else lambda_function
         )
 
     def __str__(self):

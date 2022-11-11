@@ -84,6 +84,15 @@ class AbstractTest:
         pass
 
 
+    def run_successful(self):
+        """
+        Returns whether the test was successfully run by a test worker
+
+        Returns: bool
+        """
+        pass
+
+
     def explanation(self):
         """
         Returns an explanation if the test failed, otherwise returns None

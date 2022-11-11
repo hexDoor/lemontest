@@ -4,6 +4,7 @@ import legacy_parser.adapter as Parser
 import test_scheduler.test_scheduler as TestScheduler
 
 from termcolor import colored as termcolor_colored
+from util.util import lambda_function
 
 import os
 import sys
@@ -29,26 +30,35 @@ def execute_autotest():
     colored = (
         termcolor_colored
         if parser.params()["colorize_output"]
-        else lambda x, *a, **kw: x
+        else lambda_function
     )
-    failed_tests_count = 0
+    failed_count = 0
+    not_run_count = 0
     seen_errors = {}
     # i really don't like this personally but getting "same as test blah" requires this
+    # same for not_run_tests
     for test in processed_tests:
         if not test.passed():
             print(test.explanation(seen_errors))
-            failed_tests_count += 1
+            if not test.run_successful():
+                not_run_count += 1
+            else:
+                failed_count += 1
         else:
             print(test)
-    pass_str = colored(f"{len(processed_tests) - failed_tests_count} tests passed", "green")
-    fail_str = colored(f"{failed_tests_count} tests failed", "red")
-    print(f"{pass_str} {fail_str}")
+    pass_str = colored(f"{len(processed_tests) - failed_count - not_run_count} tests passed", "green")
+    fail_str = colored(f"{failed_count} tests failed", "red")
+    if not_run_count:
+        # two spaces before tests could not be run for some reason
+        print(f"{pass_str} {fail_str}  {not_run_count} tests could not be run")
+    else:
+        print(f"{pass_str} {fail_str}")
 
     # TODO: post autotest cleanup/misc actions
     # TODO: upload to cgi?
     # TODO: send tests to output module (prettier output)
 
-    return 0
+    return 1 if failed_count + not_run_count else 0
 
 
 # setup environment and config for lemontest

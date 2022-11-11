@@ -1,7 +1,7 @@
 from classes.test_scheduler import AbstractScheduler
 from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
-from util.util import die
+from util.util import die, lambda_function
 from util.fs import copy_files_to_directory
 
 # typing
@@ -40,7 +40,7 @@ class TestScheduler(AbstractScheduler):
         self.colored = (
             termcolor_colored
             if parameters["colorize_output"]
-            else lambda x, *a, **kw: x
+            else lambda_function
         )
         try:
             # set the fork start method
@@ -69,17 +69,17 @@ class TestScheduler(AbstractScheduler):
 
         # FIXME: compile.sh and runtests.pl was executed here usually
 
-        # check tests to ensure we have all files to execute tests, otherwise die with missing files
-        req_files_set = set.intersection(
-            *[set(test.params()["files"]) for (test, _, _) in tests]
-        )
-        missing_files = [f for f in req_files_set if not glob.glob(f)]
-        if missing_files:
-            die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
-
         # copy required files (student submission + test provided)
         # into a known temp directory from scheduler
         copy_files_to_directory(self.shared_dir, self.parameters, self.args)
+
+        # check tests to ensure we have all files in the shared_dir to execute tests, otherwise die with missing files
+        req_files_set = set.intersection(
+            *[set(test.params()["files"]) for (test, _, _) in tests]
+        )
+        missing_files = [f for f in req_files_set if not glob.glob(f, root_dir=self.shared_dir)]
+        if missing_files:
+            die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
 
         # schedule tests for execution and show progress
         # super cursed but it looks nice
