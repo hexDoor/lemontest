@@ -121,6 +121,7 @@ class TestScheduler(AbstractScheduler):
     def cleanup(self) -> None:
         if self.worker_pool:
             self.worker_pool.terminate() # send SIGTERM to worker processes
+            self.worker_pool.join()
 
 
 # setup a global variable to inherit a global lock for the test preprocessing

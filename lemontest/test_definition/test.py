@@ -100,14 +100,10 @@ class Test(AbstractTest):
         if self.test_passed:
             status = self.colored("passed", "green")
         else:
-            # tests/checker enforced behaviour for anything that did not get run
-            if not self.test_ran:
-                status = self.short_explanation
-            else:
-                status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
-                if self.long_explanation:
-                    status += "\n"
-                    status += self.long_explanation
+            status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
+            if self.long_explanation:
+                status += "\n"
+                status += self.long_explanation
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # preprocess is a critical section
@@ -311,21 +307,16 @@ class Test(AbstractTest):
         if self.test_passed is None or self.test_passed:
             return str(self)
 
-        # tests/checker enforced behaviour for anything that did not get run
-        status = ""
-        if not self.test_ran:
-            status = self.short_explanation
-        else:
-            # check if error has been seen before and minimise error
-            status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
-            if self.long_explanation:
-                reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
-                if reduced_long_explanation in previous_errors:
-                    status += f" - same as Test {previous_errors[reduced_long_explanation]}"
-                else:
-                    status += "\n"
-                    status += self.long_explanation
-                previous_errors.setdefault(reduced_long_explanation, self.label)
+        # check if error has been seen before and minimise error
+        status = f"{self.colored('failed', 'red')} ({self.short_explanation})"
+        if self.long_explanation:
+            reduced_long_explanation = re.sub(r"0x[0-9a-f]+", "", self.long_explanation, flags=re.I)
+            if reduced_long_explanation in previous_errors:
+                status += f" - same as Test {previous_errors[reduced_long_explanation]}"
+            else:
+                status += "\n"
+                status += self.long_explanation
+            previous_errors.setdefault(reduced_long_explanation, self.label)
         return f"Test {self.label} ({self.parameters['description']}) - {status}"
 
     # helper functions
