@@ -1,4 +1,5 @@
 program=./hello.sh
+worker_count=6
 
 0 expected_stdout="hello\n"
 

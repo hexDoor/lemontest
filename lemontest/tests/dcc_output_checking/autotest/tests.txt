@@ -1,6 +1,7 @@
 files="hello.c"
 dcc_output_checking=true
 ignore_case=1
+worker_count=6
 postprocess_output_command="sed 's/0x[a-z0-9]*/0x/g'"
 expected_stdout="hello\nworld\n"
 

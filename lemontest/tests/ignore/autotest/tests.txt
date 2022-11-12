@@ -1,5 +1,6 @@
 program=echo.sh
 expected_stdout="Hello World!\n"
+worker_count=6
 
 ignore_case ignore_case=1 arguments="hello WORLD!"
 

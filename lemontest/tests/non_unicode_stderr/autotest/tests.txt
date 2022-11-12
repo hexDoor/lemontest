@@ -1,4 +1,5 @@
 files="not_unicode_stderr.c"
 program="not_unicode_stderr"
+worker_count=6
 
 test_stdout  expected_stderr=b"\xfa\xfa" unicode_stderr=False 

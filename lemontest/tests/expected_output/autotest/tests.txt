@@ -1,5 +1,6 @@
 program=echo.sh
 arguments="Hello World!"
+worker_count=6
 
 expected_stdout expected_stdout="Hello World!\n"
 #expected_stdout_file expected_stdout=['hello.txt']

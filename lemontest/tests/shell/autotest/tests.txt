@@ -1,4 +1,5 @@
 files="a.sh"
+worker_count=6
 1 command="echo start;./a.sh;echo end"
 1 expected_stdout="""start
 hello

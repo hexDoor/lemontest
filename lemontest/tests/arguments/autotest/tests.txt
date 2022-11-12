@@ -1,5 +1,6 @@
 files=echo.sh
 program=./echo.sh
+worker_count=6
 
 1 expected_stdout="\n"
 2 arguments=hello expected_stdout="hello\n"

@@ -1,5 +1,6 @@
 files=lemontest.py
 arguments=-a autotest
+worker_count=6
 # stop minor updates to autotest output breaking test
 ignore_blank_lines=1
 ignore_case=1

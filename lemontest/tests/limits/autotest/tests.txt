@@ -1,4 +1,5 @@
 program="echo.sh"
+worker_count=6
 
 expected_stdout=""
 

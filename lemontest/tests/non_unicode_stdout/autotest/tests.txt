@@ -1,4 +1,5 @@
 files="not_unicode_stdout.c"
 program="not_unicode_stdout"
+worker_count=6
 
 test_stdout  expected_stdout=b"\xff\xff" unicode_stdout=False

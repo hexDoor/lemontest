@@ -4,6 +4,7 @@ arguments=-a autotest
 ignore_blank_lines=1
 ignore_case=1
 compare_only_characters=abcdefghijklmnopqrstuvwxyz
+worker_count=6
 
 1
 1 expected_stdout='dcc -o a a.c\nTest 0 (./a 0) - passed\n1 tests passed 0 tests failed \n'

@@ -1,4 +1,5 @@
 files=a.c b.c
 program=a
+worker_count=6
 
 1 command=./a expected_stdout="b\n"

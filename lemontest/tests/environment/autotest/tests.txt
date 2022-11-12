@@ -1,5 +1,6 @@
 files="a.sh"
 environment_set={'answer' :42 }
+worker_count=6
 
 set_environment_variable command="echo $answer"
 set_environment_variable expected_stdout="42\n"

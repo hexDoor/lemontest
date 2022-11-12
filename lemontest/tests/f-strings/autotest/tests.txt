@@ -1,4 +1,5 @@
 program=echo.sh
 _var=hello
+worker_count=6
 
 1 arguments=f'{_var} {6 * 7} {program}' expected_stdout="hello 42 echo.sh\n"

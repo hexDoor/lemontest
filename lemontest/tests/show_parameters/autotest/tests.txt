@@ -1,4 +1,5 @@
 files=echo.sh
+worker_count=6
 
 command=echo.sh hello
 stdin="sample input"
