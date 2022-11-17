@@ -110,7 +110,10 @@
 			\pause
 		\item First introduced to UNSW in COMP2041 2015 S2
 			\pause
-		\item Sufficiently capable and in current use to perform automated marking for most UNSW introductory programming courses
+		\item Currently used to perform automated marking for most UNSW introductory programming courses which has become mandatory to reduce staff workload with increasing enrolment numbers
+			\begin{itemize}
+				\item \textbf{COMP1521:} 715 (2017) $\rightarrow$ 1633 (2021)
+			\end{itemize}
 			\pause
 		\item Written in Python (+ some Shell and Perl script interfaces)
 			\pause
@@ -125,15 +128,15 @@
 		\begin{itemize}
 			\setlength\itemsep{0.5em}
 			\item Single-thread design does not utilise all potential processing power that is available to autotest
-			\pause
+				\pause
 			\item Vulnerable to unintended or malicious actions when autotesting user-provided programs
-			\pause
+				\pause
 			\item Design is highly coupled with low cohesion making improvements significantly more difficult to implement
-			\pause
-			\item Documentation in regard to crucial autotest components were lacking
-			\pause
+				\pause
+			\item Documentation in regard to crucial autotest components were lacking or non-existent which made it difficult to understand
+				\pause
 		\end{itemize}
-		\item A refactoring or re-write of the autotest package will be of great benefit to the education of UNSW CSE students
+		\item A refactoring or re-write of the autotest package would provide great benefit to the education of UNSW CSE students
 	\end{itemize}
 \end{frame}
 \subsection{Thesis Statement}
@@ -194,17 +197,13 @@
 	\frametitle{Modular Design}
 	\begin{itemize}
 		\item A modular design has been selected for the new autotest
-		\pause
+			\pause
 		\item Modules are an established design pattern that fits the purpose of autotest
-		\pause
-		\item Enables components of high complexity to be rendered mostly if not completely separate from the internal implementations of other components
-		\pause
-		\item Each component will be inclined to do only \textbf{\underline{one}} task well
-		\pause
+			\pause
 		\item Enables easier swapping of components with minimal to no code changes other than import statements
-		\pause
-		\item Maintenance and Improvements can be tested without an overhaul
-		\pause
+			\pause
+		\item Maintenance and Improvements can be tested without a complete overhaul of autotest
+			\pause
 		\item Abstract Class design allows for easier novel design and implementation of pre-existing modules
 	\end{itemize}
 \end{frame}
@@ -278,7 +277,7 @@
 	\frametitle{Test Case Scheduler Module}
 	\textbf{Purpose:} Test runner pool manager and test allocator\\
 	\begin{itemize}
-		\item Ingests parameters to initialise and setup a container pool that enables concurrent execution of tests
+		\item Utilises given parameters to initialise and setup a container pool that enables concurrent execution of tests
 			\pause
 		\item Schedules ingested test definitions to free workers in container pool via producer-consumer pattern with synchronisation primitives
 			\pause
@@ -439,21 +438,33 @@
 \subsection{Analysis \& Contributions}
 \begin{frame}
 	\frametitle{Analysis \& Contributions}
-	\begin{enumerate}
+	\begin{itemize}
+		\setlength\itemsep{1em}
 		\item Transition testing ready implementation of new autotest package
 			\pause
-		\item User experience for course staff is very similar to legacy autotest with minimal changes required for test cases
+		\item User experience for course staff is very similar to legacy autotest with minimal changes required for test cases \textbf{(2-3 lines on average per exercise)}
 			\pause
 		\item User experience for students is very similar to legacy autotest with slight output differences reflecting the isolated and parallelised execution of each test case
 			\pause
 		\item Designed for ease of understanding and to support feature extensibility
 			\pause
 		\item Provides better overall performance in the general use case with additional computing resources
-			\pause
+	\end{itemize}
+\end{frame}
+\begin{frame}
+	\frametitle{Analysis \& Contributions - continued}
+	\begin{itemize}
+		\setlength\itemsep{1em}
 		\item Unexpected setbacks led to some less-used features being unimplemented but feature parity has been achieved for most use cases
 			\pause
 		\item Documentation is more extensive than legacy autotest
-	\end{enumerate}
+		\begin{itemize}
+			\setlength\itemsep{0.5em}
+			\item Significant commenting of code to assist ease of understanding
+				\pause
+			\item Additional supporting documentation that will assist new courses to consider integrating autotest to reduce manual marking fatigue and minimise errors
+		\end{itemize}
+	\end{itemize}
 \end{frame}
 \subsection{Future}
 \begin{frame}

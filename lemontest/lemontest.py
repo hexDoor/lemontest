@@ -26,6 +26,7 @@ def execute_autotest():
     # await execution finish and cleanup
     test_scheduler.cleanup()
 
+    # FIXME: Report Module
     # get failed_tests or exit early if everything passed
     colored = (
         termcolor_colored
@@ -47,7 +48,7 @@ def execute_autotest():
         else:
             print(test)
     pass_str = colored(f"{len(processed_tests) - failed_count - not_run_count} tests passed", "green")
-    fail_str = colored(f"{failed_count} tests failed", "red")
+    fail_str = colored(f"{failed_count} tests failed", "red" if not failed_count else "green") # i hate this but it's necessary for output parity
     if not_run_count:
         # two spaces before tests could not be run for some reason
         print(f"{pass_str} {fail_str}  {not_run_count} tests could not be run")
