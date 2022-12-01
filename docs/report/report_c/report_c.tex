@@ -1,4 +1,4 @@
-\documentclass[hidelinks, 12pt]{extreport}
+\documentclass[hidelinks]{report}
 
 % Comment out if this isn't the draft!
 % \usepackage[firstpageonly]{draftwatermark}
@@ -69,13 +69,13 @@
 
 \begin{titlepage}
 
-\vspace{\fill}
+\vspace*{\fill}
 
 \begin{center}
     \includegraphics{unsw}
 \end{center}
 
-\vspace{0.25cm}
+\vspace{0.5cm}
 
 \begin{center}
     \Large{}School of Computer Science and Engineering\\
@@ -83,7 +83,7 @@
     The University of New South Wales
 \end{center}
 
-\vspace{0.4cm}
+\vspace{1cm}
 
 \begin{center}
     \Huge \textbf{A Testing Tool for Introductory Programming Courses}
@@ -101,7 +101,7 @@
     Assessed by John Shepherd (UNSW)
 \end{center}
 
-\vspace{0.35cm}
+\vspace{0.75cm}
 
 \begin{center}
     \textbf{Thesis C Report} --- Term 3, 2022\\
@@ -133,6 +133,12 @@ Finally, I would like to thank my family and friends for all their support durin
 \textbf{CSE} Computer Science and Engineering School\\
 \textbf{pip} PIP Installs Packages - de facto and recommended package installer for Python\\
 \textbf{MVP} Minimal Viable Product\\
+\textbf{CPU} Central Processing Unit\\
+\textbf{IPC} Interprocess Communication\\
+\textbf{PID} Process ID\\
+\textbf{UTS} Unix Time-Sharing\\
+\textbf{NIS} Network Information Service\\
+\textbf{POSIX} Portable Operating System Interface\\
 
 \tableofcontents
 
@@ -166,6 +172,7 @@ One approach taken by UNSW computing courses to assist in calculating a student'
 In order to support course staff in the administration of these \textit{practical coding assessments}, \textit{automated code testing tools} can be utilised to automatically determine the correctness of a student's submitted code to a given specification with minimal course staff intervention. The results of these tools can then be further processed to generate a grade for the student's code submission.
 
 In some courses, these tools can also be made available to students by course staff to perform basic correctness checks on their code before submission. 
+\clearpage
 
 \subsection{Technical Debt}
 In 1992, Ward Cunningham who first introduced the concept of \textit{technical debt} described it as how ``shipping first time code is like going into debt. A little debt speeds development so long as it is paid back promptly with a rewrite" \cite{TechnicalDebtConcept}.
@@ -179,44 +186,45 @@ Despite the gradual improvements and fixes made to \textit{autotest} since it's 
 
 In particular, major shortcomings can be identified if we analyse the \textit{autotest} code to the framework defined within \textit{An Exploration of Technical Debt} \cite{TechnicalDebt}. A clear example is the design and architectural debt stemming from the ill-considered development of \textit{autotest} which has hindered it from easily implementing performance improvements such as multiprocessing. An additional example is the knowledge distribution debt stemming from the ineffective documentation of \textit{autotest} which has obstructed new users in their adoption of \textit{autotest} and confused code contributors on the tool's inner-workings. Resolving the aforementioned technical debts could reduce the time spent by course staff performing assessment marking and creation respectively from an already constrained time pool.
 
-As a result of these findings, there were efforts undertaken in 2021 by the UNSW CSE community including Andrew Taylor to remediate major sources of technical debt from the \textit{autotest} tool in which some measures were successful. However, there exists issues such as the lack of documentation and fundamental design flaws that have been seen as infeasible to fix without significant overhaul or a complete re-design\cite{AutotestIssues}.
+As a result of these findings, there were efforts undertaken in 2021 by the UNSW CSE community including Andrew Taylor to remediate major sources of technical debt from the \textit{autotest} tool in which some measures were successful. However, there exists issues such as the lack of documentation and fundamental design flaws that have been seen as infeasible to fix without a significant overhaul\cite{AutotestIssues}.
+\clearpage
 
 \section{Thesis Problem Statement}
 \textit{Automated code testing tools} are valuable to course staff in the administration of \textit{practical coding assessments} to students. In this thesis, we will evaluate the architecture and implementations of \textit{automated code testing tools} such as \textit{autotest}, and develop a new software package with the proper \textit{technical debt} management procedures. Thus, this thesis aims to design and implement a \textit{automated code testing tool} that is suitable to replace the existing \textit{autotest} at UNSW introductory programming courses and has measures implemented to minimise technical debt into the long term.
 
-\subsection{Thesis Structure}
-
+\subsection{Thesis Structure (FIXME)}
 Chapter 1 covers the motivations behind this thesis as well as the thesis problem statement.
-Chapter 2 explains the background concepts that are relevant to understanding the later chapters of the thesis. Chapter 3 undertakes an evaluation and review of the existing works related to this thesis.
+Chapter 2 explains the background concepts that are relevant to understanding the later chapters of the thesis.
+Chapter 3 undertakes an evaluation and review of the existing works related to this thesis.
 Chapter 4 declares design requirements/goals and proposes approaches that fulfil as many of the goals as possible before providing a justification for selecting one approach.
-Chapter 5 outlines the preliminary work that has been completed so far outside of the thesis report and outlines the work plan for Thesis B and C.
-Finally, Chapter 6 summarises the contents of this thesis report.
+Chapter 5 provides detailed information on each component and measures.
+Chapter 6 evaluates the solution in chapter 5 by comparing performance to the existing \textit{autotest} in a controlled environment.
+Finally, Chapter 7 summarises the contents of this thesis report.
 
 \unchapter{2}{Background}
 
-First, it is important to explore what technical debt is and the various approaches to management, then it is possible to start looking at the concepts of how code marking is manually conducted and it's flaws at scale. This thesis will then evaluate the various approaches to automated code testing and how they can be applied to determine the correctness of code to a given specification.
+First, it is important to explore what technical debt is and the various approaches to management, then it is possible to start looking at the concepts of how code marking is manually conducted and it's flaws at scale. This thesis will then evaluate the various approaches to automated code testing and how they can be applied to determine the correctness of code to a given specification. An overview of software containerisation is also included to assist in understanding components of the solution implementation.
 
 \section{Management of Technical Debt}
 
-Technical debt is inevitable in any project but implementing measures to understand, communicate and manage technical debt from the outset can make a huge difference in both the short- and long-term success of the project. One particular benefit is that contributors are able to make informed decisions which are aimed towards reducing the time and work required to understand and improve the project in both the short- and long-term \cite{TechnicalDebtManagement}.
+Technical debt is inevitable in any project but implementing measures to understand, communicate and manage technical debt from the outset can make a big difference in both the short- and long-term success of the project. One particular benefit is that contributors are able to make informed decisions which are aimed towards reducing the time and work required to understand and improve the project in both the short- and long-term \cite{TechnicalDebtManagement}.
 
 To minimise sources of various technical debt in this thesis project, we will implement the following measures:
 \begin{itemize}
 	\item \textbf{Extensive project and code documentation} - Extensive project and code documentation will greatly assist a reader in understanding the usage and internals of project faster which will be useful for improvements in the future.
 	\item \textbf{Project management tools} - Tools such as Github and Jira allow for the tracking of code and issues respectively to assist in communicating and management of technical debt between multiple project contributors to minimise confusion and allow each contributor to work independently.
 	\item \textbf{Modular architectural design} - Approaching the project with a modular architectural design in mind will assist in long term development as decoupling dependencies between major components will make them easier to replace when upgraded.
-	\item \textbf{Solution modernisation \& focus on feature extensibility} - Similar to modular architectural design, approaching the project with a focus in supporting easier solution modernisation and feature extensibility will reduce the need for a replacement of the entire project instead of targeted components.
+	\item \textbf{Solution modernisation \& focus on feature extensibility} - Similar to modular architectural design, approaching the project with a focus in supporting easier solution modernisation and feature extensibility will reduce the need for a replacement of the entire project instead of targeted components. If possible, solution modernisation should also be implemented.
 	\item \textbf{Automated regression testing} - Automatic regression testing of code will assist in development by allowing contributors to create and improve features whilst enforcing an accepted baseline of program correctness. This ensures that minimal code errors which can also be considered technical debt is deployed for users of the project.
 \end{itemize}
 
 Successful implementation of the above measures will ensure that the project has minimal technical debt in both the development and post-release period.
-\clearpage
 
 \section{Code Testing \& Marking}
 
 This thesis assumes that \textit{code marking} refers to the determination of whether provided code when executed conforms to some behaviour that is outlined in a specification or similar resource.
 
-As an example, Figure ~\ref{fig:markfigure1} highlights a program that concurs to a specification of checking if a given number argument is prime and a program that fails to do so:
+As an example, \autoref{fig:markfigure1} highlights a program that concurs to a specification of checking if a given number argument is prime and a program that fails to do so:
 
 \begin{figure}[h]
 	\centering
@@ -243,6 +251,7 @@ The process of testing submitted code for correctness to a specification can be 
 \end{itemize}
 
 To remediate these issues and improve the process of code testing, the thesis will turn to an automated platform to perform testing. 
+\clearpage
 
 \section{Automated Testing \& Marking Approaches}
 
@@ -255,7 +264,7 @@ The tool led to some benefits to both students and course staff as follows:
 	\item Increasing enrolments for programming courses per teaching period became economically feasible.
 \end{itemize}
 
-The thesis is based upon the idea that the benefits of automated code testing tools are valuable but repeatable and consistent methodologies of determining whether ``submitted code matches expected behaviour" need to be explored. As such, this thesis elaborates and evaluates two possible methodologies, \textit{external program side-effect comparison} and \textit{internal program unit testing}: 
+The thesis is based upon the idea that the benefits of automated code testing tools are valuable but repeatable and consistent methodologies of determining whether ``submitted code matches expected behaviour" need to be explored. As such, this thesis elaborates and evaluates two possible methodologies, \textit{external program side-effect comparison} and \textit{internal program unit testing}:
 
 \subsection{External Program Side-effect Comparison}
 
@@ -307,9 +316,48 @@ The interactions between the code tester and test program can be summarised in \
 	\label{fig:autofigure2}
 \end{figure}
 
+\subsection{Differences}
+It is possible to argue that both \textit{side-effect comparison} and \textit{unit testing} seem very similar since each technique checks program ``state" after executing some code. However, the thesis was unable to find any other suitable and usable technique in determining program correctness within a reasonable amount of time.
+
+\section{Software Containerisation}
+\textit{Containerisation} is generally accepted as the ``packaging together of code with all it's necessary components [such that packages] are isolated in their own container". This allows containers to be run consistently in any environment and on any infrastructure regardless of the operating system. More importantly, containers are isolated from the rest of a host system which will be an important feature for the thesis.\cite{containerisationGeneral}
+In order to understand how \textit{containerisation} works and how it could be of benefit to this thesis, we need to understand how \textit{Linux namespaces} work to provide \textit{containerisation}.
+
+\subsection{Linux Namespaces}
+\textit{Namespaces} are a Linux kernel feature introduced in 2002 which permits the isolation of a process from the rest of the host system. To provide finer control over the individual aspects of a process, there are currently eight \textit{namespaces} that can be created as shown in \ref{tab:table2}. This provides the ability to isolate a process without removing aspects such as network access which a user may wish to keep intact. All of these \textit{namespaces} with the exception of the \textit{user namespace} (Linux >= 3.8) require the \textit{CAP\_SYS\_ADMIN} kernel capability to be enabled. No privilege is required for the \textit{user namespace} with Linux 3.8 or above.\cite{containerisationManPage}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{ll}
+		\toprule
+		\textbf{Namespace} & \textbf{Resources Isolated} \\
+		\midrule
+		Cgroup & Cgroup root directory (system resource allocations such as cpu or memory) \\
+		IPC & System V IPC, POSIX message queues \\
+		Network & Network devices, stacks, ports, etc. \\
+		Mount  & Mount points (file system mounts) \\
+		PID & Process IDs (Process ID table) \\
+		Time & Boot and monotonic clocks \\
+		User & User and group IDs (ability for a process to have root privilege within the namespace) \\
+		UTS & Hostname and NIS domain name \\
+		\bottomrule
+	\end{tabular}
+	\caption{Linux namespaces and resources isolated by each namespace}
+	\label{tab:table2}
+\end{table}
+
+Isolating all eight \textit{namespaces} allows a process to be mostly separate from the host system which can serve as the base for a container instance. Most widely used container engines such as \textit{Docker} and \textit{Podman} rely upon \textit{namespaces} among other techniques such as \textit{overlay filesystems} to provide \textit{containerisation}.
+
+\subsection{Rootless Containers}
+The majority of popular container engines require the host system to execute the engine with root privileges in order to deliver full functionality. In recent years, the idea of \textit{rootless containers} has gained traction to counter the possible damage to a host system if a container run under root privileges is escaped by a malicious program which would then also assume root permissions. Although good practices by the user can minimise the risk of a container escape, undiscovered vulnerabilities and user error can bypass the efforts taken by the user. \textit{Rootless containers} remove the risk as any malicious programs escaping a container will no longer assume privileged access.
+
+As a result of the benefits, industry standard container engines such Docker and Podman have introduced rootless versions of their engines but are severely lacking in usage documentation and troubleshooting due to poor uptake by a majority of users who simply accept the risk or require features only available with privileged execution.
+
+With this overview, the thesis will refer to ``containerisation" as one of it's main benefits which is the isolation of an executing program from the remainder of a host system. The other main benefits such as software portability are noted but did not have a functional role in this thesis outside of potential future work.
+
 \unchapter{3}{Related Works}
 
-It is important to explore some existing work which could influence the design towards a chosen direction. In particular, the thesis will explore and evaluate \textit{autotest} - the current automated code testing tool used for introductory programming courses at UNSW \cite{Autotest}; \textit{check50} - another implementation of an automated code testing tool used in the CS50 introductory programming course at Harvard University \cite{check50}; and \textit{gtest} - a C++ unit testing framework used by Google and the programming community \cite{gtest}. Historic and minimally relevant implementations are also mentioned for completeness. 
+It is important to explore some existing work which could influence the design towards a chosen direction. In particular, the thesis explores and evaluates \textit{autotest} - the current automated code testing tool used for introductory programming courses at UNSW \cite{Autotest}; \textit{check50} - another implementation of an automated code testing tool used in the CS50 introductory programming course at Harvard University \cite{check50}; and \textit{gtest} - a C++ unit testing framework used by Google and the programming community \cite{gtest}. Historic and minimally relevant implementations are also mentioned for completeness. 
 
 \section{autotest}
 
@@ -416,7 +464,7 @@ echo -n 47 | is_prime
 	\label{fig:autotest5}
 \end{figure}
 
-To ensure a test program's full compliance to a given specification with \textit{autotest}, sufficient test cases to cover all edge cases and standard execution will be required which can be a challenge depending on the complexity of the specification. However, checks on the creation of tests is out of scope for \textit{autotest}.
+It is noted that to ensure a test program's full compliance to a given specification with \textit{autotest}, sufficient test cases to cover all edge cases and standard execution will be required. This can be a challenge depending on the complexity of the specification but it is noted that testing coverage is out of scope for \textit{autotest}.
 
 \subsection{Benefits}
 
@@ -696,11 +744,6 @@ In accordance with the thesis aim, the design goals for the project will emphasi
 	\item \textbf{Familiarity} - Existing users of \textit{autotest} should not observe the proposed solution and it's usage to be completely independent of the former.
 	\item \textbf{Performance \& Efficiency} - The proposed implementation should be observed to have comparable if not better performance than the existing \textit{autotest}. Benchmarking of \textit{autotest} and the proposed implementation will be performed to verify this goal.
 	\item \textbf{Maintainability} - The design should be adequately documented and support an ease of maintainability and possible extension of features via the appropriate architectural decisions.
-\end{itemize}
-
-In addition to the aforementioned, the thesis will also emphasise the following but at a lower priority due to time constraint limitations:
-
-\begin{itemize}
 	\item \textbf{Security} - The design should implement or consider the addition of security as it has been a concern for various implementations of an \textit{automated code testing tool} in the protection of user hardware against potentially malicious code.
 \end{itemize}
 
@@ -780,86 +823,34 @@ Evaluation of each approach was made by considering fulfilment of the design goa
 		\bottomrule
 	\end{tabular}
 	\caption{Evaluation of the \textit{check50} and \textit{autotest} approach against the stated requirements}
-	\label{tab:table2}
+	\label{tab:table3}
 \end{table}
 
-As seen from \autoref{tab:table2}, neither approach completely matches the requirements laid out, however the \textit{autotest approach} is close and will serve as an appropriate start for the project over the alternative.
+As seen from \autoref{tab:table3}, neither approach completely matches the requirements laid out, however the \textit{autotest approach} is close and will serve as an appropriate start for the project over the alternative.
 
 It is noted that some components of the test case definition design and backend design of \textit{check50} could be considered to be superior to that of \textit{autotest}. As these features are implementations details and are not greatly affected in respect to the chosen architecture, decisions on whether these features will be included in the solution can be deferred to a later time in the development period.
 
-It is also noted that the chosen approach has changed since Seminar A due to the inclusion of security in the design goals which had been justified by Seminar A feedback \cite{AutotestConversation}. Although security is a low priority goal, this was sufficient reason to modify the proposed architecture of the \textit{autotest approach}.
+It is also noted that the chosen approach has changed since Seminar A due to the inclusion of security in the design goals which had been justified by Seminar A feedback \cite{AutotestConversation}.
 
-\unchapter{5}{Preliminary Work \& Plan}
+\unchapter{5}{Implementation}
 
-\section{Preliminary Work}
+\section{Core Architecture}
 
-\subsection{Usage Survey}
+\section{Modules (or Modular Design)}
+\subsection{Core Module}
+\subsection{Parser Module}
+\subsection{Test Case Definition}
+\subsection{Test Case Scheduler Module}
+\subsection{Test Case Runner Module}
+\subsection{Sandbox Container}
+\subsection{Test Case Canonical Difference Module}
+\subsection{Test Case Report Module}
 
-As a result of feedback during the Thesis A Seminar, a survey listing the following questions is being distributed to the various course administrators of introductory programming courses at UNSW (COMP1511, COMP1521, COMP1531 and COMP2521):
-\begin{enumerate}
-	\item Do you use autotest in the courses you administrate? If so, for what purpose (marking labs and assignments etc)?
-	\item Do you believe there are issues/weaknesses with autotest? If so, could you describe them?
-	\item Do you believe there are strengths with autotest? If so, could you describe them?
-	\item How much change would be acceptable with the current autotest before you consider remaining with the original version?
-	\item Would you be interested in being kept up-to-date on a thesis project updating and replacing autotest? (This is not mandatory and participation is optional although it will be of great help to the project)
-\end{enumerate}
+\unchapter{6}{Evaluation}
 
-The results of these surveys will be collected and used to make informed decisions within the Design Document. In the event of interest by the course administrator, the course administrator will be regularly apprised of details within the Design Document to gather feedback which can be used to justify changes or a lack of change.
+\unchapter{7}{Future Work}
 
-\subsection{Design Document}
-
-The design document will contain all implementation details of the thesis project and will be the single source of truth for the project. Minimal work has been done on this document but it is expected to be populated rapidly in the near future.
-
-\section{Thesis Project Plan}
-
-This is the intended schedule for Thesis B:
-\begin{itemize}
-	\item \textit{Week 1: Initial finalisation of Design Document.} This will involve:
-	\begin{itemize}
-		\item Collection of feedback from supervisor, assessor and all relevant personnel.
-		\item Final adjustments for the initial design document.
-	\end{itemize}
-	\item \textit{Weeks 2-3: Core Tester/Main Module.} This will involve implementation of the core tester/main module in accordance with the design document and any appropriate adjustments.
-	\item \textit{Weeks 3-6: Core Testcase Parser Module.} This will involve:
-	\begin{itemize}
-		\item Implementation of core testcase parser module in accordance with the design document.
-		\item Adjustments made to the design document in respect to changing requirements/challenges.
-		\item Performance and Correctness testing run on testcase parser and results recorded.
-	\end{itemize}
-	\item \textit{Weeks 7-11: Core Testcase Runner Module.} This will involve:
-	\begin{itemize}
-		\item Implementation of core testcase runner module in accordance with the design document.
-		\item Adjustments made to the design document in respect to changing requirements/challenges.
-		\item Performance and Correctness testing run on testcase runner and results recorded.
-	\end{itemize}
-	\item \textit{Week 11: Testing with Core Tester/Main Module.} This will involve correctness testing of the core tester/main module.
-\end{itemize}
-
-Then for Thesis C:
-\begin{itemize}
-	\item \textit{Weeks 1-4: Core Testcase Program Correctness Module.} This will involve:
-	\begin{itemize}
-		\item Implementation of core testcase program correctness module in accordance with the design document.
-		\item Adjustments made to the design document in respect to changing requirements/challenges.
-		\item Performance and Correctness testing run on testcase program correctness module and results recorded.
-	\end{itemize}
-	\item \textit{Weeks 5-6: MVP Milestone \& Testing for autotest replacement.} This will involve:
-	\begin{itemize}
-		\item Designation of thesis project as having reached the Minimal Viable Product milestone.
-		\item Performance and Correctness testing run on thesis project and results recorded.
-		\item Replacement or parallelisation (for deferred cut-over) of existing autotest with the thesis project.
-	\end{itemize}
-	\item \textit{Weeks 7-8: Implementation of extensions and any other tasks.} This will involve:
-	\begin{itemize}
-		\item Implementation of any extensions that have been documented in the design document.
-		\item Any additional tasks that have taken longer than expected.
-		\item Final adjustments before Thesis C demonstration.
-		\item Benchmarking of the final thesis project before Thesis C demonstration.
-	\end{itemize}
-	\item \textit{Weeks 9-11: Write final Thesis C report.}
-\end{itemize}
-
-\unchapter{6}{Conclusion}
+\unchapter{8}{Conclusion}
 
 The above thesis outlines the possible methodologies of automated code testing, it's usage in relevant existing works and proposes a design approach for achieving the aim of this thesis which is to create an automated code testing tool in respect to the given design goals in Section 4.1.
 Preliminary work has been completed and a plan for the implementation of the proposed design has been provided to demonstrate the feasibility of this thesis.
@@ -920,6 +911,13 @@ Urs von Matt, ‘Kassandra’ (1994) 22(1) \textit{SIGCUE bulletin} 26
 
 \bibitem[18]{try}
 Kenneth A Reek, ‘The TRY System -or- How to Avoid Testing Student Programs’ (1989) 21(1) \textit{ACM SIGCSE Bulletin} 112
+
+\bibitem[19]{containerisationGeneral}
+Red Hat, ‘What is containerization?’, URL: \url{https://www.redhat.com/en/topics/cloud-native-apps/what-is-containerization}
+
+\bibitem[20]{containerisationManPage}
+man-pages Project, ‘namespaces(7)’, URL: \url{https://man7.org/linux/man-pages/man7/namespaces.7.html}
+
 
 \end{thebibliography}
 
