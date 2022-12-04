@@ -1,9 +1,8 @@
 from classes.parser import AbstractParser
+from test_definition.test import Test
 import legacy_parser.command_line_arguments as cmdlineargs
 import legacy_parser.parse_test_specification as parsetestspec
 
-# FIXME: Forced Legacy Design Break (thanks legacy parser)
-from test_definition.test import Test
 
 class Parser(AbstractParser):
     # standard vars
@@ -31,7 +30,7 @@ class Parser(AbstractParser):
     # performance benefit anyway.
     # Oh yeah, the original parser is O(N^2) so as soon as you start
     # having more tests, glhf
-    # please use the interface to rewrite a new parser that actually makes sense
+    # please use the interface to rewrite a new parser that looks nicer
     def parse_arguments(self):
         self._args = cmdlineargs.parse_arguments()
 

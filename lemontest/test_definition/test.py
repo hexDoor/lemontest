@@ -269,7 +269,6 @@ class Test(AbstractTest):
 
     def postprocess(self):
         # determine if we have passed all individual tests
-        # then 
         failed_individual_tests = [it for it in self.individual_tests if not it.passed()]
         self.test_passed = not failed_individual_tests
         # early exit if we have passed all individual tests
