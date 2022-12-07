@@ -171,9 +171,9 @@ In recent years, student enrolments in introductory programming courses at the U
 	\label{tab:table1}
 \end{table}
 
-One approach taken by UNSW computing courses to assist in calculating a student's ``mark" are \textit{practical coding assessments}. They allow for students to demonstrate their knowledge and understanding of the course content which can then be assessed at a later time by course staff.
+One approach taken by UNSW computing courses to assist in calculating a student's ``mark" are practical coding assessments. They allow for students to demonstrate their knowledge and understanding of the course content which can then be assessed at a later time by course staff.
 
-In order to support course staff in the administration of these \textit{practical coding assessments}, automated code testing tools can be utilised to automatically determine the correctness of a student's submitted code to a given specification with minimal course staff intervention. The results of these tools can then be further processed to generate a grade for the student's code submission.
+In order to support course staff in the administration of these practical coding assessments, automated code testing tools can be utilised to automatically determine the correctness of a student's submitted code to a given specification with minimal course staff intervention. The results of these tools can then be further processed to generate a grade for the student's code submission.
 
 In some courses, these tools can also be made available to students by course staff to perform basic correctness checks on their code before submission. 
 
@@ -183,7 +183,7 @@ In 1992, Ward Cunningham who first introduced the concept of \textit{technical d
 Although the meaning of \textit{technical debt} varies on the context and each reader's interpretation, this thesis will assume \textit{technical debt} to be any component or aspect of a project that could be prescribed as a weakness or flaw by a reader or contributor. As an example, \textit{technical debt} could be observed as issues that hinder the ease of understanding and improvement of a project. 
 
 \subsection{autotest}
-\textit{autotest} is a Python-based \textit{automated code testing tool} written by Andrew Taylor which is an evolution of a earlier script by Mei Cheng Whale \cite{Autotest}. It was first introduced into the COMP2041 \textit{Software Construction: Techniques and Tools} course in the second semester of 2015 and has since become the standard for introductory programming courses at UNSW to automatically assess the correctness of code to a given specification.
+\textit{autotest} is a Python-based automated code testing tool written by Andrew Taylor which is an evolution of a earlier script by Mei Cheng Whale \cite{Autotest}. It was first introduced into the COMP2041 \textit{Software Construction: Techniques and Tools} course in the second semester of 2015 and has since become the standard for introductory programming courses at UNSW to automatically assess the correctness of code to a given specification.
 
 Despite the gradual improvements and fixes made to \textit{autotest} since its introduction, \textit{autotest} is plagued with \textit{design deficiencies} and non-trivial amounts of \textit{technical debt} which has affected the scalability of \textit{autotest} in response to increasing student numbers as well as complicate development of new features.
 
@@ -192,17 +192,17 @@ In particular, major shortcomings can be identified if we analyse the \textit{au
 As a result of these findings, there were efforts undertaken in 2021 by the UNSW CSE community including Andrew Taylor to remediate major sources of technical debt from the \textit{autotest} tool in which some measures were successful. However, there exists issues such as the lack of documentation and fundamental design flaws that have been seen as infeasible to fix without a significant overhaul \cite{AutotestIssues}.
 
 \section{Thesis Problem Statement}
-\textit{Automated code testing tools} are valuable to course staff in the administration of \textit{practical coding assessments} to students. In this thesis, we will evaluate the architecture and implementations of \textit{automated code testing tools} such as \textit{autotest}, and develop a new software package with the proper \textit{technical debt} management procedures. Thus, this thesis aims to design and implement an \textit{automated code testing tool} that is suitable to replace the existing \textit{autotest} at UNSW introductory programming courses and has measures implemented to minimise technical debt into the long term.
+Automated code testing tools are valuable to course staff in the administration of practical coding assessments to students. In this thesis, we will evaluate the architecture and implementations of various automated code testing tools including \textit{autotest}, and develop a new software package with the proper \textit{technical debt} management procedures. Thus, this thesis aims to design and implement an automated code testing tool that is suitable to replace the existing \textit{autotest} at UNSW introductory programming courses and has measures implemented to minimise technical debt into the long term.
 
-\subsection{Thesis Structure}
-Chapter 1 covers the motivations behind this thesis as well as the thesis problem statement.
-Chapter 2 explains the background concepts that are relevant to understanding the later chapters of the thesis.
+\section{Thesis Structure}
+Chapter 1 covers the motivations behind this thesis as well as the problem statement.
+Chapter 2 explains the background concepts that are relevant to understanding the later chapters of this thesis.
 Chapter 3 undertakes an evaluation and review of the existing works related to this thesis.
 Chapter 4 declares design requirements/goals and proposes approaches that fulfil as many of the goals as possible before providing a justification for selecting one approach.
 Chapter 5 provides detailed information on each component and measures of the proposed solution implementation.
 Chapter 6 evaluates the solution by analysing whether the design goals have been met when compared to the existing \textit{autotest}.
-Chapter 7 lists the future work that can be performed on the solution to further improve the thesis work. 
-Finally, Chapter 8 concludes the thesis with a summary of the achievements made with the new solution.
+Chapter 7 lists the future work that can be performed on the solution to further improve this thesis. 
+Finally, Chapter 8 concludes this thesis with a summary of the achievements made with the new solution.
 
 \unchapter{2}{Background}
 
@@ -253,7 +253,7 @@ The process of testing submitted code for correctness to a specification can be 
 	\item Increasing marking load per course staff member due to increasing student numbers can exacerbate mistakes and inconsistencies.
 \end{itemize}
 
-To remediate these issues and improve the process of code testing, the thesis will turn to an automated platform to perform testing.
+To remediate these issues and improve the process of code testing, this thesis will turn to an automated platform to perform testing.
 
 \section{Automated Testing \& Marking Approaches}
 
@@ -319,11 +319,11 @@ The interactions between the code tester and test program can be summarised in \
 \end{figure}
 
 \subsection{Differences}
-It is possible to argue that both \textit{side-effect comparison} and \textit{unit testing} seem very similar since each technique checks program ``state" after executing some code. However, the thesis was unable to find any other suitable and usable technique in determining program correctness within a reasonable amount of time.
+It is possible to argue that both \textit{side-effect comparison} and \textit{unit testing} seem very similar since each technique checks program ``state" after executing some code. However, this thesis was unable to find any other suitable and usable technique in determining program correctness within a reasonable amount of time. For example, formal methods would be difficult to implement in a general way while artificial intelligence would be too unpredictable for the purposes of this thesis.
 
 \clearpage
 \section{Software Containerisation}
-Containerisation is generally accepted as the ``packaging together of code with all its necessary components [such that packages] are isolated in their own container". This allows containers to be run consistently in any environment and on any infrastructure regardless of the operating system. More importantly, containers are isolated from the rest of a host system which will be an important feature for the thesis \cite{containerisationGeneral}.
+Containerisation is generally accepted as the ``packaging together of code with all its necessary components [such that packages] are isolated in their own container". This allows containers to be run consistently in any environment and on any infrastructure regardless of the operating system. More importantly, containers are isolated from the rest of a host system which will be an important feature for this thesis \cite{containerisationGeneral}.
 In order to understand how containerisation works and how it could be of benefit to this thesis, we need to understand how \textit{Linux namespaces} work to provide containerisation.
 
 \subsection{Linux Namespaces}
@@ -352,15 +352,15 @@ Namespaces are a Linux kernel feature introduced in 2002 which permits the isola
 Isolating all eight namespaces allows a process to be mostly separate from the host system which can serve as the base for a container instance. Most widely used container engines such as \textit{Docker} and \textit{Podman} rely upon namespaces among other techniques such as overlay filesystems to provide containerisation \cite{dockerUnderlying}\cite{podmanUnderlying}.
 
 \subsection{Rootless Containers}
-The majority of popular container engines require the host system to execute the engine with root privileges in order to deliver full functionality. In recent years, the idea of \textit{rootless containers} has gained traction to counter the possible damage to a host system if a container run under root privileges is escaped by a malicious program which would then also assume root permissions. Although good practices by the user can minimise the risk of a container escape, undiscovered vulnerabilities and user error can bypass the efforts taken by the user. \textit{Rootless containers} mostly remove the risk as any malicious programs escaping a container will no longer assume automatically privileged access.
+The majority of popular container engines require the host system to execute the engine with root privileges in order to deliver full functionality. In recent years, the idea of \textit{rootless containers} has gained traction to counter the possible damage to a host system if a container run under root privileges is escaped by a malicious program which would then also assume root permissions. Although good practices by the user can minimise the risk of a container escape, undiscovered vulnerabilities and user error can bypass the efforts taken by the user. \textit{Rootless containers} mostly remove the risk as any malicious programs escaping a container will no longer assume privileged access automatically.
 
 As a result of the benefits, industry standard container engines such as \textit{Docker} and \textit{Podman} have introduced rootless versions of their engines but are severely lacking in task-specific documentation such as usage or troubleshooting due to the relatively poor uptake by a majority of users \cite{rootlessDocker}. These users usually do not know that a rootless mode exists, require features that are only available with privileged execution or have simply accepted or ignored the risk.
 
-With this overview, the thesis will refer to ``containerisation" as one of its main benefits which is the isolation of an executing program from the remainder of a host system. The other main benefits such as software portability are noted but did not have a functional role in this thesis outside of potential future work.
+With this overview, this thesis will refer to ``containerisation" as one of its main benefits which is the isolation of an executing program from the remainder of a host system. The other main benefits such as software portability are noted but did not have a functional role in this thesis outside of potential future work.
 
 \unchapter{3}{Related Works}
 
-It is important to explore some existing work which could influence the design towards a chosen direction. In particular, the thesis explores and evaluates the following related works:
+It is important to explore some existing work which could influence the design towards a chosen direction. In particular, this thesis explores and evaluates the following related works:
 \begin{itemize}
 	\item \textit{autotest} - the current automated code testing tool used for introductory programming courses at UNSW \cite{Autotest}.
 	\item \textit{check50} - another implementation of an automated code testing tool used in the CS50 introductory programming course at Harvard University \cite{check50}.
@@ -760,7 +760,7 @@ It is noted that most of these goals are qualitative and can not be quantitative
 \clearpage
 \section{Design}
 
-From the evaluation of the related works, the thesis evaluates two potential design approaches to the solution that fulfils the design goals outlined above, one of these two approaches is then chosen for the project. Implementation details for each design approach are important but defining a ``target" architecture design is considered to be of greater importance as it cannot be easily changed once development begins.
+From the evaluation of the related works, this thesis evaluates two potential design approaches to the solution that fulfils the design goals outlined above, one of these two approaches is then chosen for the project. Implementation details for each design approach are important but defining a ``target" architecture design is considered to be of greater importance as it cannot be easily changed once development begins.
 
 \subsection{check50 Approach}\label{check50Approach}
 
@@ -851,7 +851,7 @@ As per the design goals, \textit{autotest} served as a ``baseline" for which \te
 \end{enumerate}
 
 \section{Architecture}\label{architecture}
-Recall from the related works section (\autoref{autotestLimitations}) that whilst the original \textit{autotest} delivered on its purpose as an automated marking tool, it is plagued with a lack of clear structure in its design. Although \textit{autotest} was never intended to be expanded to the extent it is today, a side effect of lacking a clear architecture has made it significant difficult to extend \textit{autotest} with new functionality. \textit{Lemontest} improves on this limitation by embracing a modular architecture which isolates the discrete pieces of functionality seen in \textit{autotest} into individual modules with little to no dependencies with each other as shown in \autoref{fig:architecture}.
+Recall from the related works section (\autoref{autotestLimitations}) that whilst the original \textit{autotest} delivered on its purpose as an automated marking tool, it is plagued with a lack of clear structure in its design. Although \textit{autotest} was never intended to be expanded to the extent it is today, the lack of a clear architecture has made it significantly difficult to extend \textit{autotest} with new functionality. \textit{Lemontest} improves on this limitation by embracing a modular architecture which isolates the discrete pieces of functionality seen in \textit{autotest} into individual modules with little to no dependencies with each other as shown in \autoref{fig:architecture}.
 
 \begin{figure}[h]
 	\centering
@@ -1166,7 +1166,7 @@ def execute(self, test: AbstractTest, pLock: Lock):
 \end{figure}
 
 \subsection{Sandbox Container}\label{sandboxContainer}
-\textit{Sandbox} is a lightweight pure-Python container runtime implementation for Linux systems which allows the executing process (Python interpreter) to execute code in a container similarly to \textit{chroot} but with extra features and sturdier protections in place.
+\textit{Sandbox} is a lightweight pure-Python container runtime implementation for Linux systems created specifically for \textit{lemontest} but can also be used in other applications. \textit{Sandbox} allows the executing process (Python interpreter) to execute code in a container similarly to \textit{chroot} but with extra features and sturdier protections in place.
 Originally, the use of an industry standard container engine or existing project was considered but each was rejected with good cause:
 \begin{itemize}
 	\item Docker SDK for Python (Docker) \cite{docker-py}
@@ -1581,7 +1581,7 @@ Recall from the \textit{autotest limitations} (\autoref{autotestLimitations}) th
 \begin{figure}[h]
 	\centering
 	\makebox[\textwidth][c]{\includegraphics[width=\textwidth, height=0.85\textheight, keepaspectratio=true,]{paramdocs}}
-	\caption{Parameter documentation on \textit{lemontest} exclusive parameters}
+	\caption{Parameter documentation on lemontest exclusive parameters}
 	\label{fig:docsLemontestParams}
 \end{figure}
 
@@ -1614,7 +1614,7 @@ As supported by the modular architecture and significant code documentation of \
 
 \textit{Lemontest} may fall short in some modules such as the \textit{parser module} and \textit{canonical difference module} which require further work to solve their respective limitations that was not viable to complete within the thesis time frame.
 
-Despite the shortcomings, \textit{lemontest} and its design are still adequately documented, supporting ease of maintainability and extension of features. Thus, the thesis determines that the maintainability design goal has been met.
+Despite the shortcomings, \textit{lemontest} and its design are still adequately documented, supporting ease of maintainability and extension of features. Thus, this thesis determines that the maintainability design goal has been met.
 
 \section{Security}
 The security design goal is stated as: \textit{The design should implement or consider the addition of security as it has been a concern for various implementations of an automated code testing tool in the protection of user hardware against potentially malicious code.}
@@ -1649,7 +1649,7 @@ touch: cannot touch '/home/postgres/test': Read-only file system
 
 If a user attempts to deny system resources by performing useless work for a long time, \textit{autotest} limited the resources that tests were able to utilise via \textit{rlimit} which is also implemented in \textit{lemontest}.
 
-As such, the thesis determines that the security design goal has been met.
+As such, this thesis determines that the security design goal has been met.
 
 \clearpage
 \section{Performance \& Efficiency}
@@ -1711,16 +1711,17 @@ The incorrect version of the program only multiplies the float value by 1024 whi
 		float\_2048 non-containerised correct - all tests (s) & N/A  & 54.985 & N/A \\
 		\bottomrule
 	\end{tabular}
-	\caption{lemontest and autotest benchmark on float\_2048 exercise}
+	\caption{Lemontest and autotest benchmark on float\_2048 exercise}
 	\label{tab:benchmarkTable}
 \end{table}
 
-For most scenarios as shown in \autoref{tab:benchmarkTable}, \textit{lemontest} has a proven performance improvement over \textit{autotest} when handling correct and incorrect code. Although a higher performance gain could be expected for these scenarios, the difference has been addressed by the overhead introduced in \textit{lemontest} by new features such as containerisation. However, on advice from Shrey Somaiya, disabling containerisation led to a testing time increase of 7.1\% which could not be explained in time for this thesis. Further work needs to be undertaken to discover the cause behind the discrepancy as performance should technically increase by forgoing the entire containerisation process.
+For most scenarios as shown in \autoref{tab:benchmarkTable}, \textit{lemontest} has a proven performance improvement over \textit{autotest} when handling correct and incorrect code. Originally, a higher reduced testing time percentage closer to 75\% was expected for the ``all tests" scenarios since the 11 tests were spread over four test workers in parallel which should theoretically reduce testing time by up to a factor of four. However, the difference in performance has been addressed by the overhead introduced in \textit{lemontest} through new features such as containerisation. Interestingly, disabling containerisation on advice from Shrey Somaiya led to a testing time increase of 7.1\% on the \textit{float\_2048} ``correct all tests" scenario which could not be explained in time for this thesis. Further work needs to be undertaken to discover the cause behind the discrepancy as performance should technically increase by forgoing the entire containerisation process.
 
-In the event of a segfault or any runtime error that requires the \textit{dcc} compiled binary to explain the issue, performance has severely decreased by a large margin. This increase in testing time has been attributed to an issue with how \textit{dcc} compiled binaries work on UNSW CSE servers when the binary must open external programs like \textit{valgrind} to explain a program crash. In particular, \textit{dcc} compiled binaries wait on the closure of \textit{stdout} and \textit{stderr} pipes of programs it opens despite the opened program already signalling termination. This wait period has been measured to be around 10 seconds and was bypassed on the end of \textit{lemontest} by no longer waiting on pipe closures for the \textit{dcc} compiled binary itself. However, \textit{lemontest} cannot control the internal behaviour of the binary as it is controlled by \textit{dcc}. The creators of \textit{dcc} were informed but the issue could not be reproduced on local machines or servers other than UNSW CSE. As \textit{dcc} specific issues are out of scope, the thesis is unable to perform a reasonable performance evaluation for programs that have runtime issues with \textit{lemontest}. If \textit{dcc} were working as expected, the performance benefit should be similar to that of the aforementioned successful scenarios.
+In the event of a segfault or any runtime error that requires the \textit{dcc} compiled binary to explain the issue, performance has severely decreased by a large margin. This increase in testing time has been attributed to an issue with how \textit{dcc} compiled binaries work on UNSW CSE servers when the binary must open external programs like \textit{valgrind} to explain a program crash. In particular, \textit{dcc} compiled binaries wait on the closure of \textit{stdout} and \textit{stderr} pipes of programs it opens despite the opened program already signalling termination. This wait period has been measured to be around 10 seconds and was bypassed on the end of \textit{lemontest} by no longer waiting on pipe closures for the \textit{dcc} compiled binary itself. However, \textit{lemontest} cannot control the internal behaviour of the binary as it is controlled by \textit{dcc}. The creators of \textit{dcc} were informed but the issue could not be reproduced on local machines or servers other than UNSW CSE. As \textit{dcc} specific issues are out of scope, this thesis is unable to perform a reasonable performance evaluation for programs that have runtime issues with \textit{lemontest}. If \textit{dcc} were working as expected, the performance benefit should be similar to that of the aforementioned successful scenarios.
 
 In light of these benefits and limitations, this thesis determines that the performance and efficiency design goal has been mostly met.
 
+\clearpage
 \section{Familiarity}
 The familiarity design goal is stated as: \textit{Existing users of autotest should not observe the proposed solution and its usage to be completely independent of the former.}
 
@@ -1728,15 +1729,14 @@ Despite the various changes made in \textit{lemontest}, feature parity and backw
 
 Most existing test case specifications used with \textit{autotest} are immediately compatible with \textit{lemontest} once some \textit{lemontest} exclusive parameters are added depending on the needs of the test. The most common addition for C-based exercise test specifications at UNSW CSE is bind mounts for test dependencies such as \textit{dcc} and \textit{c\_check} which are not located in default mounts such as ``\lstinline|/bin|".
 
-The reports generated by \textit{lemontest} are very similar as mentioned in the implementation section (\autoref{lemontestResults}) where user may assume \textit{lemontest} is an updated \textit{autotest} rather than a completely new code testing tool.
+The reports generated by \textit{lemontest} are very similar to \textit{autotest} as mentioned in the implementation section (\autoref{lemontestResults}) where a user may mistake \textit{lemontest} as an updated \textit{autotest} rather than a new code testing tool.
 
 As such, this thesis determines that the familiarity design goal has been met.
 
-\clearpage
 \section{Accessibility}
 The accessibility design goal is stated as: \textit{The design should allow new users to easily integrate this automated code testing tool into their coding assessments.}
 
-Although further work such as examples for each test parameter were planned for this goal, time constraints prevented the work from being completed in time for the thesis. Instead, documentation parity with \textit{autotest} has been kept and work to expand the accessibility of \textit{lemontest} for new course administrators has been planned as future work.
+Although further work such as examples for each test parameter were planned for this goal, time constraints prevented the work from being completed in time for this thesis. Instead, documentation parity with \textit{autotest} has been kept and work to expand the accessibility of \textit{lemontest} for new course administrators has been planned as future work.
 
 As such, this thesis determines that the accessibility design goal has not been adequately met.
 
@@ -1757,7 +1757,7 @@ As such, this thesis determines that the accessibility design goal has not been 
 	\caption{Summary of lemontest evaluation to design goals}
 	\label{tab:evaluation}
 \end{table}
-\autoref{tab:evaluation} summarises the degree to which each design goal is met. Four out of five design goals are atleast mostly met, and with some future work it should be possible to meet all the design goals originally envisioned for \textit{lemontest}.
+\autoref{tab:evaluation} summarises the degree to which each design goal is met. Four out of five design goals are at least mostly met, and with some future work it should be possible to meet all the design goals originally envisioned for \textit{lemontest}.
 
 \unchapter{7}{Future Work}
 We will now look at some work for the future which would be needed to consider this thesis truly complete.
@@ -1768,7 +1768,7 @@ For the near future, some additional work needs to be completed to satisfy the r
 Although the usage documentation for \textit{lemontest} is at a similar level to \textit{autotest}, additional work to support new users of \textit{lemontest} should be completed. Some examples include expanded usage documentation, better sample test specifications targeting different assessment types and more. Feedback from new users should then be consolidated to tweak any remaining documentation.
 
 \subsection{DCC Issues}
-Whilst issues with \textit{dcc} are considered out of scope for the thesis, once a fix has been implemented, the \textit{dcc} bypass within the \textit{test case definition} should be removed. Benchmarking should also be performed again to determine the full performance benefit of \textit{lemontest} compared to the old \textit{autotest}. 
+Whilst issues with \textit{dcc} are considered out of scope for this thesis, once a fix has been implemented, the \textit{dcc} bypass within the \textit{test case definition} should be removed. Benchmarking should also be performed again to determine the full performance benefit of \textit{lemontest} compared to the old \textit{autotest}. 
 
 \subsection{Sandbox Improvements}
 \textit{Sandbox} provides a good containerisation solution for \textit{lemontest} but by no means is it perfect. \textit{Sandbox} can be benefited by the following improvements which should be implemented in the near future:
