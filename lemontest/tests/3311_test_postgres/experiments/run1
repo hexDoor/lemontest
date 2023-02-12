@@ -1,0 +1,82 @@
+#!/bin/bash
+
+D=/home/cs3311/22T3.work/ass1/
+T=/home/cs3311/22T3.work/ass1/testing
+A=/home/cs3311/web/22T3/assignments/ass1
+
+. /home/jas/env
+
+if [ "$#" -lt 1 ]
+then
+        echo "Usage: $0 zID"; exit 1;
+fi
+
+sub="$D/$2/$1"
+echo $sub
+
+if [ ! -r "$sub/submission.tar" ]
+then
+        echo "No submission"; exit 1;
+fi
+
+rm ass1.sql
+tar xf "$sub/submission.tar"
+
+if [ ! -r "ass1.sql" ]
+then
+        echo "No ass1.sql"; exit 1;
+fi
+
+OUT="$D/results/$1-1"
+dropdb ass1test
+createdb ass1test
+psql ass1test -f "$T/ass1.dump" > /dev/null 2>&1
+cat > "$OUT" <<_XXX_
+
+=== Loading your code ===
+
+_XXX_
+psql ass1test -f ass1.sql 2>&1 | grep -v NOTICE >> "$OUT"
+
+cat >> "$OUT" <<_XXX_
+
+=== Testing on standard database ===
+
+_XXX_
+psql ass1test -f "$T/check.sql" > /dev/null 2>&1
+psql ass1test -c 'select * from check_all();' >> "$OUT" 2>&1
+
+OUT="${OUT}a"
+cat > "$OUT" <<_XXX_
+
+== Showing tests with incorrect output (if any) ===
+
+_XXX_
+php runerrs $1 1 >> "$OUT" 2>&1
+
+OUT="$D/results/$1-2"
+cat > "$OUT" <<_XXX_
+
+
+=== Testing on "unseen" database ===
+
+Same schema, slightly different data
+
+_XXX_
+
+dropdb ass1test
+createdb ass1test
+psql ass1test -f "$T/ass1-2.dump" > /dev/null 2>&1
+psql ass1test -f ass1.sql > /dev/null 2>&1
+psql ass1test -f "$T/check-2.sql" > /dev/null 2>&1
+psql ass1test -c 'select * from check_all();' >> "$OUT" 2>&1
+
+OUT="${OUT}a"
+cat > "$OUT" <<_XXX_
+
+== Showing output of failed tests (if any) ===
+
+_XXX_
+php runerrs $1 2 >> "$OUT" 2>&1
+
+cat "$D/results/$1-1" "$D/results/$1-1a" "$D/results/$1-2" "$D/results/$1-2a" > "$D/results/$1"

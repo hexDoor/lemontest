@@ -486,6 +486,27 @@ PARAMETER_LIST += [
         """,
     ),
     Parameter(
+        "global_setup_command",
+        finalize=finalize_command,
+        description="""
+            If set **`global_setup_command`** is executed once before all tests run within the shared test directory once all necessary files have been copied.<br>
+            This is invisible to the user, unless **`global_setup_command`** has a non-zero exit status.<br>
+            All tests are not run if  **`global_setup_command`** has a non-zero exit-status.<br>
+            If **`global_setup_command`** is a string, it is passed to a shell.
+            If **`global_setup_command`** is a list, it is executed directly.
+        """,
+    ),
+    Parameter(
+        "global_clean_command",
+        finalize=finalize_command,
+        description="""
+            If set **`global_clean_command`** is executed once after all tests run within the shared test directory.<br>
+            This is invisible to the user, unless **`global_clean_command`** has a non-zero exit status.<br>
+            If **`global_clean_command`** is a string, it is passed to a shell.
+            If **`global_clean_command`** is a list, it is executed directly.
+        """,
+    ),
+    Parameter(
         "setup_command_shell",
         show_in_documentation=False,
         default=False,

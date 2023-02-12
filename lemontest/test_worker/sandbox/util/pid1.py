@@ -11,7 +11,7 @@ import os
 import stat
 
 from . import libc
-from .config import CONTAINER_MOUNTS, CONTAINER_DEVICE_NODES, BindMount
+from .config import CONTAINER_MOUNTS, CONTAINER_ISOLATE_NETWORK_MOUNTS, CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS, CONTAINER_DEVICE_NODES, BindMount
 
 class PID1:
     def __init__(self, root_dir, isolate_networking, debug, bind_mounts):
@@ -56,6 +56,10 @@ class PID1:
             destination.mkdir(parents=True, exist_ok=True)
 
     def create_bind_mounts(self):
+        # in the event network isolation is disabled we must bind mount /sys
+        # see: https://lore.kernel.org/lkml/87ha2nyi3y.fsf@x220.int.ebiederm.org/
+        if self.isolate_networking:
+            self.bind_mounts += CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS
         for source, relative_destination, read_only in self.bind_mounts:
             # check if the source actually exists (Issue picked up in Arch with missing /lib32)
             if not source.exists():
@@ -90,7 +94,10 @@ class PID1:
         os.chroot('.')
 
     def mount_defaults(self):
-        for m in CONTAINER_MOUNTS:
+        MOUNTS = CONTAINER_MOUNTS
+        if self.isolate_networking:
+            MOUNTS += CONTAINER_ISOLATE_NETWORK_MOUNTS
+        for m in MOUNTS:
             options = None
             if m.options:
                 options = ",".join(m.options)
@@ -150,7 +157,10 @@ class PID1:
             os.remove(dst_nodepath)
 
     def umount_defaults(self):
-        for m in CONTAINER_MOUNTS:
+        MOUNTS = CONTAINER_MOUNTS
+        if self.isolate_networking:
+            MOUNTS += CONTAINER_ISOLATE_NETWORK_MOUNTS
+        for m in MOUNTS:
             libc.umount2(m.destination, libc.MNT_DETACH)
             os.rmdir(m.destination)
             pass

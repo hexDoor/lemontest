@@ -1,0 +1,42 @@
+#!/usr/bin/python3
+# this is useless
+
+import sys
+import os
+import subprocess
+
+MODES = ["view", "function"]
+
+# check valid invocation
+if len(sys.argv) <= 2 or sys.argv[2] not in MODES:
+    print(f"Usage: {sys.argv[0]} <dbName> (view|function) <components>")
+    sys.exit(1)
+
+_db = sys.argv[1]
+_mode = sys.argv[2]
+
+# view mode expects 2 components
+if _mode == "view" and len(sys.argv) != 5:
+    print(f"Usage: {sys.argv[0]} <dbName> view <select_cols> <viewName>")
+    sys.exit(1)
+
+# function mode expects 3 or more components
+if _mode == "function" and len(sys.argv) < 6:
+    print(f"Usage: {sys.argv[0]} <dbName> function <select_cols> <functionName> <function_args>")
+    sys.exit(1)
+
+# generate psql command
+_user = os.environ["USER"]
+_cols = sys.argv[3]
+_cmd = f"select {_cols} from "
+if _mode == "view":
+    _cmd += sys.argv[4]
+elif _mode == "function":
+    _cmd += f"{sys.argv[4]}('asdf', 'asdf', 'asdf')" #TODO: how to do this?
+else:
+    print(f"{_mode} mode is not yet implemented")
+    sys.exit(1)
+
+
+# invoke psql
+subprocess.call(["psql", "-d", _db, "-c", _cmd])

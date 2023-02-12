@@ -69,12 +69,23 @@ CONTAINER_MOUNTS = [
     #    flags=MS_NOSUID | MS_NOEXEC | MS_NODEV,
     #    options=None,
     #),
+]
+
+CONTAINER_ISOLATE_NETWORK_MOUNTS = [
     Mount(
         destination=Path("/sys"),
         type="sysfs",
         source="sysfs",
         flags=MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY,
         options=None,
+    ),
+]
+
+CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS = [
+    BindMount(
+        source="/sys",
+        destination="/sys",
+        readonly=True
     ),
 ]
 

@@ -133,6 +133,23 @@ The test is not run if  **`setup_command`** has a non-zero exit-status.
 If **`setup_command`** is a string, it is passed to a shell.
 If **`setup_command`** is a list, it is executed directly.
 
+**`global_setup_command`**
+
+
+If set **`global_setup_command`** is executed once before all tests run within the shared test directory once all necessary files have been copied.  
+This is invisible to the user, unless **`global_setup_command`** has a non-zero exit status.  
+All tests are not run if  **`global_setup_command`** has a non-zero exit-status.  
+If **`global_setup_command`** is a string, it is passed to a shell.
+If **`global_setup_command`** is a list, it is executed directly.
+
+**`global_clean_command`**
+
+
+If set **`global_clean_command`** is executed once after all tests run within the shared test directory.  
+This is invisible to the user, unless **`global_clean_command`** has a non-zero exit status.  
+If **`global_clean_command`** is a string, it is passed to a shell.
+If **`global_clean_command`** is a list, it is executed directly.
+
 ### Parameters specifying inputs for test
 
 **`supplied_files_directory`**

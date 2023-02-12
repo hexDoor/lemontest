@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+    echo "illegal number of parameters"
+    exit 1
+fi
+
+DBNAMEPREFIX=$1
+DBNAME="$DBNAMEPREFIX-$USER"
+
+# pg_ctl -o "-F -h localhost -p 5432" start
+psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$2"

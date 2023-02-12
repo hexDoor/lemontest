@@ -1,0 +1,9 @@
+#!/bin/bash
+
+DBNAMEPREFIX="lemontest"
+DBNAME="$DBNAMEPREFIX-$USER"
+
+# clean db
+dropdb --if-exists $DBNAME
+
+exit 0

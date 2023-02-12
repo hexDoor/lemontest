@@ -3,6 +3,7 @@ from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
 from util.util import die, lambda_function
 from util.fs import copy_files_to_directory
+from util.subprocess import run_support_command
 
 # typing
 from argparse import Namespace
@@ -20,6 +21,7 @@ import tempfile
 import shutil
 import atexit
 import os
+import io
 
 """
 import logging
@@ -30,12 +32,15 @@ logger.setLevel(SUBDEBUG)
 class TestScheduler(AbstractScheduler):
     args = None
     parameters = None
+    debug = False
     shared_dir = None
     worker_pool = None
+    cleanup_run = False # need this to prevent cleanup running twice
 
     def __init__(self, args: Namespace, parameters: Dict[str, Any]):
         self.args = args
         self.parameters = parameters
+        self.debug = parameters["debug"]
         self.shared_dir = Path(tempfile.mkdtemp())
         atexit.register(lambda: shutil.rmtree(self.shared_dir))
         self.colored = (
@@ -87,6 +92,9 @@ class TestScheduler(AbstractScheduler):
             die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
         os.chdir(orig_dir)
 
+        # run any overarching support setup commands here
+        self.global_setup_command()
+
         # schedule tests for execution and show progress
         # super cursed but it looks nice
         test_res = []
@@ -119,9 +127,56 @@ class TestScheduler(AbstractScheduler):
         return test_res
 
     def cleanup(self) -> None:
+        # early exit if cleanup run
+        if self.cleanup_run:
+            return
         if self.worker_pool:
             self.worker_pool.terminate() # send SIGTERM to worker processes
             self.worker_pool.join()
+        # run overarching cleanup support command
+        self.global_clean_command()
+        self.cleanup_run = True
+
+    def global_setup_command(self):
+        orig_dir = os.getcwd()
+        os.chdir(self.shared_dir)
+        # run global_setup_command within shared directory
+        global_setup_command = self.parameters["global_setup_command"]
+        if global_setup_command:
+            output = io.StringIO()
+            if not run_support_command(
+                global_setup_command,
+                file=output,
+                debug=self.debug
+            ):
+                explanation = output.getvalue()
+                output.close()
+                die(explanation)
+        if self.debug:
+            print(output.getvalue())
+        output.close()
+        os.chdir(orig_dir)
+
+    def global_clean_command(self):
+        orig_dir = os.getcwd()
+        os.chdir(self.shared_dir)
+        # run global_clean_command within shared directory
+        global_clean_command = self.parameters["global_clean_command"]
+        if global_clean_command:
+            output = io.StringIO()
+            if not run_support_command(
+                global_clean_command,
+                file=output,
+                debug=self.debug
+            ):
+                explanation = output.getvalue()
+                output.close()
+                die(explanation)
+        if self.debug:
+            print("asdf")
+            print(output.getvalue())
+        output.close()
+        os.chdir(orig_dir)
 
 
 # setup a global variable to inherit a global lock for the test preprocessing

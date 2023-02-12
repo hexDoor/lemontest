@@ -1,0 +1,18 @@
+#!/bin/bash
+
+DBNAMEPREFIX="lemontest"
+DBNAME="$DBNAMEPREFIX-$USER"
+
+# prepare for test DB loading
+# TODO: copy over the db from template db
+dropdb --if-exists "$DBNAME"
+if ! createdb "$DBNAME"; then
+    echo "createdb $DBNAME failed"
+    exit 1
+fi
+
+# load submission sql
+if ! psql -d "$DBNAME" -f test.sql; then
+    exit 1
+fi
+exit 0

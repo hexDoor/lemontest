@@ -1,0 +1,36 @@
+max_cpu=10
+files=test.sql
+worker_count=3
+optional_files=["./sql_tester"]
+worker_read_only_mount=["/home/z5208931/postgresql_cluster/pgsql/bin/", "/mnt/wsl"]
+worker_isolate_network=false
+
+_DB=lemontest
+
+# global setup and cleanup
+# copy existing db over from template global (drop existing first)
+# load submission sql
+global_setup_command=./sql_load
+global_clean_command=./sql_clean
+
+
+# select * from test1
+1 command=f"./sql_tester '{_DB}' 'select * from test1'"
+1 description='test1'
+1 expected_stdout="""\
+?column?
+asdf?
+(1 row)
+"""
+
+
+# select * from test2("this is a test")
+2 command=f"""\
+./sql_tester "{_DB}" "select * from test2('this is a test')"
+"""
+2 description='test2'
+2 expected_stdout="""\
+test2
+this is a test
+(1 row)
+"""

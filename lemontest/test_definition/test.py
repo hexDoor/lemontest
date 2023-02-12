@@ -1,5 +1,6 @@
 from classes.test import AbstractTest
 from util.util import lambda_function
+from util.subprocess import run_support_command
 from .subprocess_with_resource_limits import run
 from .output_differences import compare_strings, report_difference, report_bit_differences, sanitize_string, insert_hex_slash_x, echo_command_for_string, check_bad_characters
 from .defs import STDOUT, STDERR
@@ -733,43 +734,3 @@ def get_unique_program_name(program: str, compile_command: Union[List[str], str]
     compile_command_str = "_".join(compile_command) if isinstance(compile_command, list) else compile_command
     compile_command_str = compile_command_str.replace(" ", "_")
     return program + "." + "__".join([compile_command_str] + test_files).replace("/", "___")
-
-
-def run_support_command(
-    command: List[str],
-    file=sys.stdout,
-    arguments: List[str] = None,
-    unlink: str = None,
-    debug: bool = False,
-) -> bool:
-    """
-    run support command, shell used iff command is a string
-    command is not resource-limited, unlike tests
-    if unlink is set, it is removed iff it is a symlink, before the command is run
-    return True if command has 0 exit status, False otherwise
-    """
-    arguments = arguments or []
-    if isinstance(command, str):
-        cmd = command + " " + " ".join(arguments)
-    else:
-        cmd = command + arguments
-
-    if unlink and os.path.exists(unlink) and os.path.islink(unlink):
-        os.unlink(unlink)
-
-    try:        
-        p = subprocess.run(
-            cmd,
-            shell=isinstance(cmd, str),
-            input="",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            check=False,
-        )
-        file.write(p.stdout)
-        result = p.returncode == 0
-        return result
-    except Exception as err:
-        file.write(str(err))
-        return False
