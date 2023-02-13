@@ -2,6 +2,8 @@
 Promise this will be updated again with lemontest specific details again.
 It's somewhat there but missing some details on some of the more specific lemontest features such as containerisation configuration.
 
+[Refer to thesis paper for details.](report/report_c/report_c.pdf)
+
 ## Summary
 lemontest is a redesign and reorganisation of the existing [Autotest](https://github.com/COMP1511UNSW/autotest)
 written by Andrew Taylor et al. to better utilise new developments in software design such as embracing
