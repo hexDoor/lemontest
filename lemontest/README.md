@@ -1,6 +1,211 @@
 # lemontest
-This is a sample readme
+Promise this will be updated again with lemontest specific details again.
+It's somewhat there but missing some details on some of the more specific lemontest features such as containerisation configuration.
 
+## Summary
+lemontest is a redesign and reorganisation of the existing [Autotest](https://github.com/COMP1511UNSW/autotest)
+written by Andrew Taylor et al. to better utilise new developments in software design such as embracing
+a modular architecture, containerisation and parallelisation of tests to alleviate security and performance
+concerns respectively.
+
+lemontest runs a series of tests on 1 or more programs comparing their behaviour to specified expected behaviour.
+
+lemontest focuses on producing output comprehensible to a novice programmer
+perhaps in their first coding course.
+
+The lemontest syntax is designed to allow tests to be specified quickly and concisely.
+
+Tests are typically specified in a single file named by default *tests.txt*.
+
+lemontest syntax is designed to allow succinct convenient specification of tests, e.g.:
+
+```
+files=is_prime.c
+
+1 stdin="39" expected_stdout="29 is not prime\n"
+2 stdin="42" expected_stdout="42 is not prime\n"
+3 stdin="47" expected_stdout="47 is prime\n"
+```
+
+## Running lemontest
+
+lemontest allows flexible specification of command line arguments, so it can be comfortable
+used by novices who little experience with command-line programs.
+
+lemontest will typically be run via a wrapper shell script which
+specifies arguments and parameters values appropriate for a class, for example,
+specifiying the base directory to search for autotests, e.g:
+
+
+```bash
+#!/bin/sh
+
+parameters="
+	default_compilers = {'c' : [['clang', '-Werror', '-std=gnu11', '-g', '-lm']]}
+	upload_url = https://example.com/autotest.cgi
+"
+
+exec /usr/local/lemontest/lemontest.py --exercise_directory /home/class/activities --parameters "$parameters" "$@"```
+
+Students can then run the wrapper script simply specifying  the particular class exercise they wish to
+autotest, perhaps:
+
+```bash
+$ autotest.sh is_prime
+```
+
+Some useful command-line options are useful when developing test specifications, include:
+
+**-a AUTOTEST_DIRECTORY, --autotest_directory AUTOTEST_DIRECTORY** specify directly the location
+of the autotest specification.
+
+**-D DIRECTORY, --directory DIRECTORY** copty files in the specified to the test directory.
+
+**-g, --generate_expected_output** generate expected output for the tests
+by executing the supplied files.
+
+for example, this will update the test specification in the directory  `my_autotest` using a
+model solution in `my_solution`
+
+```bash
+$ lemontest.py --generate_expected_output=update --directory my_solution  --autotest_directory my_autotest
+```
+
+
+## Test Execution Environment
+
+A temporary container (effectively a hardened chroot jail) is created for each autotest with
+the program and any supporting files centralised to a shared directory that each test will either
+link or copy files from.
+
+By default any other files in the test specification directory are also
+copied to the shared directory (see the `supplied_files_directory` parameter)
+but not necessarily the test container at the current time (`optional_files` currently needs to be set but this is due to change soon)
+
+By default tests are executed in an environment stripped of most environment variables
+but this can be specified with test parameters.
+
+By default tests are executed with resource limits which can be specified with test parameters.
+(This is subject to change once either cgroupsv2 libraries arrive to python or I get around to writing one myself)
+
+
+## Tests
+
+A test consists of a label and set of parameter value.
+
+Every test must have a unique label consisting of alphanumeric characters and underscore ([a-zA-Z0-9_]+)
+
+The file is read sequentially and when a test label is reached
+a test is created with the current values of parameters.
+
+Assignments to parameter values apply to any following test or until
+a different value is assigned to the parameter.
+
+Except assignments to parameter values on the same line as a test label
+are used only for that test. For example in the follow example
+the CPU limit for *test1* is 5 seconds and the CPU limit for *test2* is 10 seconds.
+
+```
+max_cpu_seconds=10
+
+test1  max_cpu_seconds=5  command=./prime.py 41  expected_stdout="True\n"
+
+test2  command=./prime.py 42  expected_stdout="False\n"
+```
+
+If a command is a single string it is passed to a shell for evaluation
+
+A test label may be used multiple times to supply the value of different parameters for the test.
+
+```
+max_cpu_seconds=10
+program=prime.py
+
+test1  max_cpu_seconds=5  arguments=41 expected_stdout="True\n"
+
+test2  arguments=42  expected_stdout="False\n"
+```
+
+
+## Parameter Assignments
+
+Tests are specified by assigning values to parameters, for example:
+
+```
+max_cpu_seconds=10
+```
+
+Parameter names  start with an alphabetic letter and can contain
+alphanumeric characters and underscore ([a-zA-Z0-9_]+)
+
+The values assigned to parameters can use Python syntax including single-quotes,
+double-quotes, triple-quotes and raw-quotes and f-strings.
+Values can also be lists or dicts specified in Python syntax.
+
+Triple-quoted strings, lists and dicts can be multi-line.
+
+Parameters specified in previous lines are available as parameters in f-strings.
+Parameters specified on the current line are not available in the evaluation of f-strings.
+
+Assignment to a parameter name which is not a builtin parameter listed in the section below,
+will produce an error unless the parameter name begins with a single '_'.
+Parameter names begining with '_' can be given values to be used in later f-strings.
+
+
+For convenience, values can also be written as shell-like unquoted strings
+if they contain only non-whitespace ASCII and none of these characters **\\ = [ ] { } " ' **.
+So for example, these are equivalent parameter assignments.
+
+```
+command=./a.out
+command="./a.out"
+```
+
+Multiple unquoted strings are aggregated into a list so these are equivalent commands:
+
+```
+command=./a.out --print example.txt
+command=['./a.out', '--print', 'example.txt']
+```
+
+Parameter values are coerced to an appropriate type if possible.
+If a boolean type is expected, values are converted to be True or False following
+Python rules, so for example . **`0  '' [] {}`** will all become  **`False`**,
+except strings with a first characters of '0', 'f' or 'F' are considered  **`False`**
+
+## Examples
+
+```Python
+files=prime.c
+
+# specifying command-lines arguments
+test1  arguments=41  expected_stdout="41 is prime.\n"
+
+# specifying stdin
+test2  stdin="42"  expected_stdout="42 is not prime.\n"
+
+# using files to specify stdin and expected_stdout
+test3  stdin=['43.txt']  expected_stdout=['43_expected_output.txt']
+
+# running a  Shell command
+test4 command="echo 44 | prime"   expected_stdout="44 is not prime.\n"
+
+# using two line to specifiy test plus triple-quote for a multi-line string
+test5  arguments=45
+test5  expected_stdout="""45 is not prime.
+"""
+
+# specify more flexibility in test acceptance
+# by ignoring white space, some punctuation characters (",.!") and extra new lines
+test6  ignore_whitespace=True  ignore_blank_lines=True  ignore_characters=",.!"
+test6  arguments=46  expected_stdout="46 is not prime.\n"
+
+
+# make test succeed if it has just right digits in output
+test7  arguments=47 compare_only_characters="0123456789" expected_stdout="47 is not prime.\n"
+```
+
+## Test Parameters
 <!--- start - autogenerated from parameter_descriptions.py --->
 ### Parameters specifying command to be run
 

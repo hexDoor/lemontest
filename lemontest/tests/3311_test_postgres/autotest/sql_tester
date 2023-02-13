@@ -1,12 +1,13 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
+if [ "$#" -ne 1 ]; then
     echo "illegal number of parameters"
     exit 1
 fi
 
 DBNAME="$USER"
-read -s -p "Enter your UNSW zPassword" PASS
+
+# TODO support LDAP authentication via prompting in lemontest for student password and passing it here via env
 
 # pg_ctl -o "-F -h localhost -p 5432" start
-echo $PASS | psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$2"
+psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$1"
