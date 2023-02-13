@@ -66,6 +66,17 @@ class AbstractTest:
         pass
 
 
+    def set_param(self):
+        """
+        Update key value pair in parameter dictionary of the test
+        Necessary if we want to change environment with user provided values
+
+        Expects: str, Any
+        Returns: None
+        """
+        pass
+
+
     def params(self):
         """
         Returns the parameter dictionary of the test

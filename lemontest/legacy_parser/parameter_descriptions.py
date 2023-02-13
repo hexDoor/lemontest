@@ -738,6 +738,29 @@ PARAMETER_LIST += [
             
         """,
     ),
+    Parameter(
+        "global_user_environment_vars",
+        default=[],
+        required_type=list,
+        description="""
+            List of environment variable values that need to be provided by the user for use in all tests.<br>
+            User input **is** reflected on the terminal.<br> 
+            For example, if a user needs to provide a value to a pre-specified environment variable. This shouldn't be used unless necessary.<br>
+            **NOTE: There is no duplicate checking implemented at the moment so please use a variable that does not exist.**
+        """,
+    ),
+    Parameter(
+        "global_user_protected_environment_vars",
+        default=[],
+        required_type=list,
+        description="""
+            List of environment variable values that need to be provided by the user for use in all tests.<br>
+            User input **is not** reflected on the terminal.<br> 
+            For example, if a user needs to provide their LDAP password for UNSW LDAP authentication which should
+            be stored in $PASS, provide `["PASS"]`.<br>
+            **NOTE: There is no duplicate checking implemented at the moment so please use a variable that does not exist.**
+        """,
+    ),
     "### Parameters specifying expected output for test",
     Parameter(
         "expected_stdout",
@@ -1248,8 +1271,8 @@ PARAMETER_LIST += [
         ],
         description="""
             Pathnames of files or directories mounted read-only in the worker
-            The parameter **`worker_read_only_mount`** should be used to add extra pathnames.<bt>
-            This parameter need only be set to stop one of these pathnames being mounted.
+            The parameter **`worker_read_only_mount`** should be used to add extra pathnames.<br>
+            This parameter need only be set to stop one of these pathnames being mounted.<br>
             **Note: Files and custom mount points are not yet supported**
         """,
     )

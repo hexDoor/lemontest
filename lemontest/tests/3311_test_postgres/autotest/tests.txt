@@ -11,6 +11,9 @@ worker_isolate_network=false
 # Does not currently support LDAP password forwarding in it's current form (being done soon)
 # Needs a little revamp with regards to optional_files parameter but we'll handle that a little bit later (have an idea)
 
+# provide LDAP password to env variable
+global_user_protected_environment_vars=["PGPASSWORD"]
+
 # global setup and cleanup
 # copy existing db over from template global (drop existing first)
 # load submission sql

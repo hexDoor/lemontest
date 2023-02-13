@@ -1,5 +1,5 @@
 from classes.test import AbstractTest
-from util.util import lambda_function
+from util.util import lambda_function, die
 from util.subprocess import run_support_command
 from .subprocess_with_resource_limits import run
 from .output_differences import compare_strings, report_difference, report_bit_differences, sanitize_string, insert_hex_slash_x, echo_command_for_string, check_bad_characters
@@ -13,9 +13,7 @@ from pathlib import Path
 import codecs
 import io
 import os
-import sys
 import time
-import subprocess
 import glob
 import re
 import copy
@@ -292,6 +290,13 @@ class Test(AbstractTest):
         self.stderr = individual_test.stderr
         self.short_explanation = individual_test.short_explanation
         self.long_explanation = individual_test.get_long_explanation()
+
+    def set_param(self, name: str, value: Any):
+        if name not in self.parameters.keys():
+            die(f"test set_param() given unknown param key '{name}'")
+        if type(self.parameters[name]) != type(value):
+            die(f"test set_param() value type mismatch '{name}' is {type(value)} - expected {type(self.parameters[name])}")
+        self.parameters[name] = value
 
     def params(self):
         return self.parameters

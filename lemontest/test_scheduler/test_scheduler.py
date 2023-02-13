@@ -22,6 +22,7 @@ import shutil
 import atexit
 import os
 import io
+import getpass
 
 """
 import logging
@@ -70,18 +71,13 @@ class TestScheduler(AbstractScheduler):
         if not self.args.labels:
             die("nothing to test")
 
-        # process tests to be run
-        tests = [(test, self.shared_dir, self.parameters) for test in tests]
-
-        # FIXME: compile.sh and runtests.pl was executed here usually
-
         # copy required files (student submission + test provided)
         # into a known temp directory from scheduler
         copy_files_to_directory(self.shared_dir, self.parameters, self.args)
 
         # check tests to ensure we have all files in the shared_dir to execute tests, otherwise die with missing files
         req_files_set = set.intersection(
-            *[set(test.params()["files"]) for (test, _, _) in tests]
+            *[set(test.params()["files"]) for test in tests]
         )
         # FIXME: root_dir argument is only available in python 3.10
         # CSE at time of writing is on version 3.9 => have to do things the old fashioned way
@@ -94,6 +90,15 @@ class TestScheduler(AbstractScheduler):
 
         # run any overarching support setup commands here
         self.global_setup_command()
+
+        # ask for any user provided parameters here (done after setup to minimise effort when forgetting to supply a file)
+        # FIXME: try to find a better way to update all the tests nicely
+        if self.global_user_environment_vars():
+            for test in tests:
+                test.set_param("environment", self.parameters["environment"])
+
+        # process tests to be run
+        tests = [(test, self.shared_dir, self.parameters) for test in tests]
 
         # schedule tests for execution and show progress
         # super cursed but it looks nice
@@ -152,9 +157,9 @@ class TestScheduler(AbstractScheduler):
                 explanation = output.getvalue()
                 output.close()
                 die(explanation)
-        if self.debug:
-            print(output.getvalue())
-        output.close()
+            if self.debug:
+                print(output.getvalue())
+            output.close()
         os.chdir(orig_dir)
 
     def global_clean_command(self):
@@ -172,11 +177,49 @@ class TestScheduler(AbstractScheduler):
                 explanation = output.getvalue()
                 output.close()
                 die(explanation)
-        if self.debug:
-            print("asdf")
-            print(output.getvalue())
-        output.close()
+            if self.debug:
+                print(output.getvalue())
+            output.close()
         os.chdir(orig_dir)
+
+    def global_user_environment_vars(self):
+        # NOTE: could probably combine the two functions but want to keep things separate just in case
+        environment = self.parameters["environment"]
+        change_flag = False
+        # load visible environment variable values
+        for key in self.parameters["global_user_environment_vars"]:
+            if self.debug:
+                print(f"attempting to read visible env var '{key}'")
+            if key in environment.keys():
+                die(f"{key} already exists in provided environment")
+            try:
+                value = input(f"Enter value for environment variable '{key}':")
+                environment.update({key: value})
+                change_flag = True
+            except EOFError:
+                die(f"no input or EOF was given as the value for '{key}'")
+            except Exception as err:
+                die(f"critical error when giving value to environment variable '{key}' - {err}")
+
+        # load hidden environment variable values
+        for key in self.parameters["global_user_protected_environment_vars"]:
+            if self.debug:
+                print(f"attempting to read hidden env var '{key}'")
+            if key in environment.keys():
+                die(f"{key} already exists in provided environment")
+            try:
+                value = getpass.getpass(f"Enter value for environment variable '{key}' - (Input is Hidden):")
+                environment.update({key: value})
+                change_flag = True
+            except EOFError:
+                die(f"no input or EOF was given as the value for '{key}'")
+            except Exception as err:
+                die(f"critical error when giving value to environment variable '{key}' - {err}")
+
+        # replace old environment
+        if change_flag:
+            self.parameters["environment"] = environment
+        return change_flag
 
 
 # setup a global variable to inherit a global lock for the test preprocessing
