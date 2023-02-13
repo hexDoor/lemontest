@@ -10,4 +10,4 @@ DBNAME="$USER"
 # TODO support LDAP authentication via prompting in lemontest for student password and passing it here via env
 
 # pg_ctl -o "-F -h localhost -p 5432" start
-psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$1"
+psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$1" 2>&1
