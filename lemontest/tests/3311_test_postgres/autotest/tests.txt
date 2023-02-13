@@ -2,7 +2,7 @@ max_cpu=10
 files=test.sql
 worker_count=3
 optional_files=["./sql_tester"]
-worker_read_only_mount=["/home/z5208931/postgresql_cluster/pgsql/bin/", "/mnt/wsl"]
+worker_read_only_mount=["/localstorage/cs3311/postgresql_cluster/pgsql/bin/"]
 worker_isolate_network=false
 
 _DB=lemontest

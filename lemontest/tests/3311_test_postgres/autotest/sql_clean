@@ -1,9 +1,14 @@
 #!/bin/bash
 
-DBNAMEPREFIX="lemontest"
-DBNAME="$DBNAMEPREFIX-$USER"
+DBNAME="$USER"
+read -s -p "Enter your UNSW zPassword" PASS
 
 # clean db
-dropdb --if-exists $DBNAME
+if ! echo $PASS | psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "drop schema public cascade"; then
+    exit 1
+fi
+if ! echo $PASS | psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "create schema public"; then
+    exit 1
+fi
 
 exit 0

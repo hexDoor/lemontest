@@ -1,18 +1,21 @@
 #!/bin/bash
 
-DBNAMEPREFIX="lemontest"
-DBNAME="$DBNAMEPREFIX-$USER"
+DBNAME="$USER"
+read -s -p "Enter your UNSW zPassword" PASS
+echo "asdf"
 
 # prepare for test DB loading
-# TODO: copy over the db from template db
-dropdb --if-exists "$DBNAME"
-if ! createdb "$DBNAME"; then
-    echo "createdb $DBNAME failed"
+if ! echo $PASS | psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "drop schema public cascade"; then
+    exit 1
+fi
+if ! echo $PASS | psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "create schema public"; then
     exit 1
 fi
 
+# TODO: load task here
+
 # load submission sql
-if ! psql -d "$DBNAME" -f test.sql; then
+if ! echo $PASS | psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -f test.sql; then
     exit 1
 fi
 exit 0

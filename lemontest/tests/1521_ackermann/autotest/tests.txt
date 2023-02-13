@@ -3,7 +3,7 @@ max_cpu=30
 command=1521 mipsy ackermann.s
 files=ackermann.s
 worker_read_only_mount=["/home/cs1521/bin"]
-worker_count=6
+worker_count=4
 
 
 0 description="Ackermann(0, 0)" stdin="0\n0\n"

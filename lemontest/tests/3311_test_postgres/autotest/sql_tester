@@ -5,8 +5,8 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-DBNAMEPREFIX=$1
-DBNAME="$DBNAMEPREFIX-$USER"
+DBNAME="$USER"
+read -s -p "Enter your UNSW zPassword" PASS
 
 # pg_ctl -o "-F -h localhost -p 5432" start
-psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$2"
+echo $PASS | psql -A -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "$2"
