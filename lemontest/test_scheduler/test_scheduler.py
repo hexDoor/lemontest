@@ -88,14 +88,14 @@ class TestScheduler(AbstractScheduler):
             die(f"Unable to run tests because these files were missing: {self.colored(' '.join(missing_files), 'red')}")
         os.chdir(orig_dir)
 
-        # run any overarching support setup commands here
-        self.global_setup_command()
-
         # ask for any user provided parameters here (done after setup to minimise effort when forgetting to supply a file)
         # FIXME: try to find a better way to update all the tests nicely
         if self.global_user_environment_vars():
             for test in tests:
                 test.set_param("environment", self.parameters["environment"])
+
+        # run any overarching support setup commands here
+        self.global_setup_command()
 
         # process tests to be run
         tests = [(test, self.shared_dir, self.parameters) for test in tests]

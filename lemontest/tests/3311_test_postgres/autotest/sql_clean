@@ -5,10 +5,10 @@ DBNAME="$USER"
 # TODO support LDAP authentication via prompting in lemontest for student password and passing it here via env
 
 # clean db
-if ! psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "drop schema public cascade" 2>&1; then
+if ! psql "host=localhost port=6622 dbname=$USER user=$USER password=$PGPASSWORD" -c "drop schema public cascade" 2>&1; then
     exit 1
 fi
-if ! psql -h localhost -p 5432 -U "$USER" -d "$DBNAME" -c "create schema public" 2>&1; then
+if ! psql "host=localhost port=6622 dbname=$USER user=$USER password=$PGPASSWORD" -c "create schema public" 2>&1; then
     exit 1
 fi
 
