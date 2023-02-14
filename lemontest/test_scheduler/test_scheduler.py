@@ -1,7 +1,7 @@
 from classes.test_scheduler import AbstractScheduler
 from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
-from util.util import die, lambda_function
+from util.util import die, lambda_function, atexit_exc_decorator
 from util.fs import copy_files_to_directory
 from util.subprocess import run_support_command
 
@@ -57,7 +57,8 @@ class TestScheduler(AbstractScheduler):
             # spawn worker pool
             self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
             # cleanup worker pool at exit (fixes issue with lemontest exiting without fully terminating processes)
-            atexit.register(self.cleanup)
+            # this function is run during atexit so having a decorator to catch any exceptions will format accordingly
+            atexit.register(atexit_exc_decorator(self.cleanup, self.debug))
         except Exception as err:
             die(err)
 
