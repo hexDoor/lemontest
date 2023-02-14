@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from typing import List
+from typing import List, Dict, Any
 
 def run_support_command(
     command: List[str],
@@ -10,6 +10,7 @@ def run_support_command(
     arguments: List[str] = None,
     unlink: str = None,
     debug: bool = False,
+    environ: Dict[str, Any] = os.environ
 ) -> bool:
     """
     run support command, shell used iff command is a string
@@ -35,6 +36,7 @@ def run_support_command(
             stderr=subprocess.STDOUT if debug else subprocess.DEVNULL,
             universal_newlines=True,
             check=False,
+            env=environ # only run with custom environ if set
         )
         file.write(p.stdout)
         result = p.returncode == 0

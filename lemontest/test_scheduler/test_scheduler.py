@@ -147,12 +147,15 @@ class TestScheduler(AbstractScheduler):
         os.chdir(self.shared_dir)
         # run global_setup_command within shared directory
         global_setup_command = self.parameters["global_setup_command"]
+        # if custom envs are added, should update setup environ as well
+        env = self.parameters["environment"]
         if global_setup_command:
             output = io.StringIO()
             if not run_support_command(
                 global_setup_command,
                 file=output,
-                debug=self.debug
+                debug=self.debug,
+                environ=env if env != os.environ else os.environ
             ):
                 explanation = output.getvalue()
                 output.close()
@@ -167,12 +170,15 @@ class TestScheduler(AbstractScheduler):
         os.chdir(self.shared_dir)
         # run global_clean_command within shared directory
         global_clean_command = self.parameters["global_clean_command"]
+        # if custom envs are added, should update setup environ as well
+        env = self.parameters["environment"]
         if global_clean_command:
             output = io.StringIO()
             if not run_support_command(
                 global_clean_command,
                 file=output,
-                debug=self.debug
+                debug=self.debug,
+                environ=env if env != os.environ else os.environ
             ):
                 explanation = output.getvalue()
                 output.close()
