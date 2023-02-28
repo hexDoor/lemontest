@@ -59,7 +59,7 @@ class PID1:
         # in the event network isolation is disabled we must bind mount /sys
         # see: https://lore.kernel.org/lkml/87ha2nyi3y.fsf@x220.int.ebiederm.org/
         if self.isolate_networking:
-            self.bind_mounts += CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS
+            self.bind_mounts += self.convert_bind_mounts_parameter(CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS)
         for source, relative_destination, read_only in self.bind_mounts:
             # check if the source actually exists (Issue picked up in Arch with missing /lib32)
             if not source.exists():
