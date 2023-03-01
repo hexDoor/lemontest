@@ -43,7 +43,7 @@ def mount(source: Path, target: Path, fstype, flags, data):
     if data is not None:
         data = data.encode('utf-8')
     if libc.mount(str(source).encode('utf-8'), str(target).encode('utf-8'), fstype, flags, data) != 0:
-        raise OSError(ctypes.get_errno(), f"'{str(source)}' Mount failed")
+        raise OSError(ctypes.get_errno(), f"'{str(source)}' -> '{str(target)}' Mount failed")
 
 
 def get_all_mounts():

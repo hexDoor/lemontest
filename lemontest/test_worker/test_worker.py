@@ -8,6 +8,7 @@ from multiprocessing import Lock
 import tempfile
 import shutil
 import atexit
+import subprocess
 
 from .sandbox.sandbox import Sandbox, SHARED_DIR_DEST
 
@@ -55,6 +56,8 @@ class TestWorker(AbstractWorker):
             pLock.release()
             if not pStatus:
                 return test
+
+            #subprocess.run(["ls", "-al", "/sys"])
 
             # execute test
             rStatus = test.run_test(SHARED_DIR_DEST)

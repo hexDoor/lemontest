@@ -18,7 +18,17 @@ class PID1:
         self.root_dir = Path(root_dir).resolve()
         self.isolate_networking = isolate_networking
         self.debug = debug
-        self.bind_mounts = self.convert_bind_mounts_parameter(bind_mounts)
+        # in the event network isolation is disabled we must bind mount /sys
+        # see: https://lore.kernel.org/lkml/87ha2nyi3y.fsf@x220.int.ebiederm.org/
+        self.bind_mounts = bind_mounts
+        if not self.isolate_networking:
+            self.bind_mounts += CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS
+        self.bind_mounts = self.convert_bind_mounts_parameter(self.bind_mounts)
+        # need to have this as Python has some weird behaviour with ALLCAP variables (somehow preserved between funcs)
+        # setup default mounts
+        self.default_mounts = CONTAINER_MOUNTS
+        if self.isolate_networking:
+            self.default_mounts += CONTAINER_ISOLATE_NETWORK_MOUNTS
         self.old_root = os.open("/", os.O_PATH) # i'm going to regret having an open fd to root
         # but it's necessary for proper cleanup
     
@@ -56,10 +66,6 @@ class PID1:
             destination.mkdir(parents=True, exist_ok=True)
 
     def create_bind_mounts(self):
-        # in the event network isolation is disabled we must bind mount /sys
-        # see: https://lore.kernel.org/lkml/87ha2nyi3y.fsf@x220.int.ebiederm.org/
-        if self.isolate_networking:
-            self.bind_mounts += self.convert_bind_mounts_parameter(CONTAINER_ISOLATE_NETWORK_BIND_MOUNTS)
         for source, relative_destination, read_only in self.bind_mounts:
             # check if the source actually exists (Issue picked up in Arch with missing /lib32)
             if not source.exists():
@@ -67,15 +73,18 @@ class PID1:
                     print(f"WARNING: BindMount Skipped - '{source}' does not exist")
                 continue
 
-            destination = self.root_dir.joinpath(relative_destination)
-            self.create_mount_target(source, destination)
             if self.debug > 1:
                 print(f"Bind Mounting BindMount({source}, {relative_destination}, {read_only})")
+            destination = self.root_dir.joinpath(relative_destination)
+            self.create_mount_target(source, destination)
+
             libc.mount(source, destination, None, libc.MS_BIND | libc.MS_REC , None)
             if read_only:
                 # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
                 # which is why we have to make the bind mount read-only in a separate call.
                 # See https://lwn.net/Articles/281157/
+                if self.debug > 1:
+                    print(f"Read-Only Bind Remounting BindMount({source}, {relative_destination}, {read_only})")
                 flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_REC | libc.MS_RDONLY
                 libc.mount(Path(), destination, None, flags, None)
 
@@ -94,10 +103,7 @@ class PID1:
         os.chroot('.')
 
     def mount_defaults(self):
-        MOUNTS = CONTAINER_MOUNTS
-        if self.isolate_networking:
-            MOUNTS += CONTAINER_ISOLATE_NETWORK_MOUNTS
-        for m in MOUNTS:
+        for m in self.default_mounts:
             options = None
             if m.options:
                 options = ",".join(m.options)
@@ -129,9 +135,9 @@ class PID1:
                 print(f"WARNING: BindMount Skipped - '{src_nodepath}' does not exist")
             return
 
-        self.create_mount_target(src_nodepath, dst_nodepath, True)
         if self.debug > 1:
             print(f"Device Bind Mounting BindMount({src_nodepath}, {dst_nodepath}, {readonly})")
+        self.create_mount_target(src_nodepath, dst_nodepath, True)
         libc.mount(src_nodepath, dst_nodepath, None, libc.MS_BIND | libc.MS_REC , None)
         if readonly:
             # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
@@ -157,10 +163,9 @@ class PID1:
             os.remove(dst_nodepath)
 
     def umount_defaults(self):
-        MOUNTS = CONTAINER_MOUNTS
-        if self.isolate_networking:
-            MOUNTS += CONTAINER_ISOLATE_NETWORK_MOUNTS
-        for m in MOUNTS:
+        for m in self.default_mounts:
+            if self.debug > 1: 
+                print(f"Unmounting {m}")
             libc.umount2(m.destination, libc.MNT_DETACH)
             os.rmdir(m.destination)
             pass
