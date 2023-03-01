@@ -77,7 +77,6 @@ class PID1:
                 print(f"Bind Mounting BindMount({source}, {relative_destination}, {read_only})")
             destination = self.root_dir.joinpath(relative_destination)
             self.create_mount_target(source, destination)
-
             libc.mount(source, destination, None, libc.MS_BIND | libc.MS_REC , None)
             if read_only:
                 # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
@@ -143,6 +142,8 @@ class PID1:
             # "Read-only bind mounts" are actually an illusion, a special feature of the kernel,
             # which is why we have to make the bind mount read-only in a separate call.
             # See https://lwn.net/Articles/281157/
+            if self.debug > 1:
+                print(f"Read-Only Device Bind Remounting BindMount((deliberately_empty_src), {dst_nodepath}, {readonly})")
             flags = libc.MS_REMOUNT | libc.MS_BIND | libc.MS_REC | libc.MS_RDONLY
             libc.mount(Path(), dst_nodepath, None, flags, None)
 
