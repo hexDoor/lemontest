@@ -342,30 +342,38 @@ class Test(AbstractTest):
             if not checker:
                 continue
             for filename in self.test_files:
-                output = io.StringIO()
+                stdout = io.StringIO()
+                stderr = io.StringIO() # this is ignored but required
                 if not run_support_command(
                     checker,
-                    file=output,
+                    stdout=stdout,
+                    stderr=stderr,
                     arguments=[filename],
                     debug=self.debug
                 ):
-                    self.long_explanation = output.getvalue()
-                    output.close()
+                    self.long_explanation = stdout.getvalue()
+                    stdout.close()
+                    stderr.close()
                     return False
-                output.close()
+                stdout.close()
+                stderr.close()
 
         pre_compile_command = self.parameters["pre_compile_command"]
         if pre_compile_command:
-            output = io.StringIO()
+            stdout = io.StringIO()
+            stderr = io.StringIO()
             if not run_support_command(
                 pre_compile_command,
-                file=output,
+                stdout=stdout,
+                stderr=stderr,
                 debug=self.debug
             ):
-                self.long_explanation = output.getvalue()
-                output.close()
+                self.long_explanation = stdout.getvalue()
+                stdout.close()
+                stderr.close()
                 return False
-            output.close()
+            stdout.close()
+            stderr.close()
 
         return True
 
@@ -392,18 +400,22 @@ class Test(AbstractTest):
 
             # run compile
             arguments = [] if self.parameters["compiler_args"] else self.test_files
-            output = io.StringIO()
+            stdout = io.StringIO()
+            stderr = io.StringIO()
             if not run_support_command(
                 compile_command,
                 arguments=arguments,
                 unlink=program,
-                file=output,
+                stdout=stdout,
+                stderr=stderr,
                 debug=self.debug
             ):
-                self.long_explanation = output.getvalue()
-                output.close()
+                self.long_explanation = stdout.getvalue()
+                stdout.close()
+                stderr.close()
                 return False
-            output.close()
+            stdout.close()
+            stderr.close()
 
             # check that compiled program actually exists
             if not os.path.exists(program):
@@ -486,16 +498,20 @@ class Test(AbstractTest):
         # run any setup_command
         setup_command = self.parameters["setup_command"]
         if setup_command:
-            output = io.StringIO()
+            stdout = io.StringIO()
+            stderr = io.StringIO()
             if not run_support_command(
                 setup_command,
-                file=output,
+                stdout=stdout,
+                stderr=stderr,
                 debug=self.debug
             ):
-                self.long_explanation = output.getvalue()
-                output.close()
+                self.long_explanation = stdout.getvalue()
+                stdout.close()
+                stderr.close()
                 return False
-            output.close()
+            stdout.close()
+            stderr.close()
 
         return True
     
