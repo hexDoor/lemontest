@@ -187,13 +187,14 @@ class TestScheduler(AbstractScheduler):
         if global_clean_command:
             stdout = io.StringIO()
             stderr = io.StringIO()
-            if run_support_command(
+            retcode = run_support_command(
                 global_clean_command,
                 stdout=stdout,
                 stderr=stderr,
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
-            ):
+            )
+            if retcode != 0:
                 explanation = stdout.getvalue() + "\n" + stderr.getvalue()
                 stdout.close()
                 stderr.close()
