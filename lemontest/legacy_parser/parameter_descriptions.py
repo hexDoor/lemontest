@@ -492,6 +492,7 @@ PARAMETER_LIST += [
             If set **`global_setup_command`** is executed once before all tests run within the shared test directory once all necessary files have been copied.<br>
             This is invisible to the user, unless **`global_setup_command`** has a non-zero exit status.<br>
             All tests are not run if  **`global_setup_command`** has a non-zero exit-status.<br>
+            The execution of any given **`global_clean_command`** is aborted/not run if exit-status of **`global_setup_command`** is not zero or one.<br>
             If **`global_setup_command`** is a string, it is passed to a shell.
             If **`global_setup_command`** is a list, it is executed directly.
         """,

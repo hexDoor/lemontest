@@ -6,17 +6,19 @@ from typing import List, Dict, Any
 
 def run_support_command(
     command: List[str],
-    file=sys.stdout,
+    stdout=sys.stdout,
+    stderr=sys.stderr,
+    pass_fds=[],
     arguments: List[str] = None,
     unlink: str = None,
     debug: bool = False,
     environ: Dict[str, Any] = os.environ
-) -> bool:
+) -> int:
     """
     run support command, shell used iff command is a string
     command is not resource-limited, unlike tests
     if unlink is set, it is removed iff it is a symlink, before the command is run
-    return True if command has 0 exit status, False otherwise
+    returns exit code returned by support command
     """
     arguments = arguments or []
     if isinstance(command, str):
@@ -33,14 +35,15 @@ def run_support_command(
             shell=isinstance(cmd, str),
             input="",
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT if debug else subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
             universal_newlines=True,
             check=False,
             env=environ # only run with custom environ if set
         )
-        file.write(p.stdout)
-        result = p.returncode == 0
-        return result
+        # write outputs into stdout and stderr
+        stdout.write(p.stdout)
+        stderr.write(p.stderr)
+        return p.returncode
     except Exception as err:
-        file.write(str(err))
+        stderr.write(str(err))
         return False

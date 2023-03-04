@@ -37,6 +37,7 @@ class TestScheduler(AbstractScheduler):
     shared_dir = None
     worker_pool = None
     cleanup_run = False # need this to prevent cleanup running twice
+    abort_global_cleanup = False
 
     def __init__(self, args: Namespace, parameters: Dict[str, Any]):
         self.args = args
@@ -140,7 +141,9 @@ class TestScheduler(AbstractScheduler):
             self.worker_pool.terminate() # send SIGTERM to worker processes
             self.worker_pool.join()
         # run overarching cleanup support command
-        self.global_clean_command()
+        # unless aborted
+        if not self.abort_global_cleanup:
+            self.global_clean_command()
         self.cleanup_run = True
 
     def global_setup_command(self):
@@ -151,19 +154,27 @@ class TestScheduler(AbstractScheduler):
         # if custom envs are added, should update setup environ as well
         env = self.parameters["environment"]
         if global_setup_command:
-            output = io.StringIO()
-            if not run_support_command(
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            retcode = run_support_command(
                 global_setup_command,
-                file=output,
+                stdout=stdout,
+                stderr=stderr,
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
-            ):
-                explanation = output.getvalue()
-                output.close()
+            )
+            if not retcode:
+                explanation = stdout.getvalue() + "\n" + stderr.getvalue()
+                stdout.close()
+                stderr.close()
+                if retcode != 1:
+                    self.abort_global_cleanup = True
                 die(explanation)
             if self.debug:
-                print(output.getvalue())
-            output.close()
+                print(stdout.getvalue())
+                print(stderr.getvalue())
+            stdout.close()
+            stderr.close()
         os.chdir(orig_dir)
 
     def global_clean_command(self):
@@ -174,19 +185,24 @@ class TestScheduler(AbstractScheduler):
         # if custom envs are added, should update setup environ as well
         env = self.parameters["environment"]
         if global_clean_command:
-            output = io.StringIO()
+            stdout = io.StringIO()
+            stderr = io.StringIO()
             if not run_support_command(
                 global_clean_command,
-                file=output,
+                stdout=stdout,
+                stderr=stderr,
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
             ):
-                explanation = output.getvalue()
-                output.close()
+                explanation = stdout.getvalue() + "\n" + stderr.getvalue()
+                stdout.close()
+                stderr.close()
                 die(explanation)
             if self.debug:
-                print(output.getvalue())
-            output.close()
+                print(stdout.getvalue())
+                print(stderr.getvalue())
+            stdout.close()
+            stderr.close()
         os.chdir(orig_dir)
 
     def global_user_environment_vars(self):
