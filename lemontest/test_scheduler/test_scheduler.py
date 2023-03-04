@@ -187,7 +187,7 @@ class TestScheduler(AbstractScheduler):
         if global_clean_command:
             stdout = io.StringIO()
             stderr = io.StringIO()
-            if not run_support_command(
+            if run_support_command(
                 global_clean_command,
                 stdout=stdout,
                 stderr=stderr,

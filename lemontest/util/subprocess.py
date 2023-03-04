@@ -45,5 +45,5 @@ def run_support_command(
         stderr.write(p.stderr)
         return p.returncode
     except Exception as err:
-        stderr.write(str(err))
-        return False
+        stdout.write(str(err))
+        return 1

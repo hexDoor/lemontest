@@ -344,7 +344,7 @@ class Test(AbstractTest):
             for filename in self.test_files:
                 stdout = io.StringIO()
                 stderr = io.StringIO() # this is ignored but required
-                if not run_support_command(
+                if run_support_command(
                     checker,
                     stdout=stdout,
                     stderr=stderr,
@@ -362,7 +362,7 @@ class Test(AbstractTest):
         if pre_compile_command:
             stdout = io.StringIO()
             stderr = io.StringIO()
-            if not run_support_command(
+            if run_support_command(
                 pre_compile_command,
                 stdout=stdout,
                 stderr=stderr,
@@ -402,7 +402,7 @@ class Test(AbstractTest):
             arguments = [] if self.parameters["compiler_args"] else self.test_files
             stdout = io.StringIO()
             stderr = io.StringIO()
-            if not run_support_command(
+            if run_support_command(
                 compile_command,
                 arguments=arguments,
                 unlink=program,
@@ -500,7 +500,7 @@ class Test(AbstractTest):
         if setup_command:
             stdout = io.StringIO()
             stderr = io.StringIO()
-            if not run_support_command(
+            if run_support_command(
                 setup_command,
                 stdout=stdout,
                 stderr=stderr,
