@@ -251,6 +251,12 @@ but if **`program`** == `hello.sh` **`files`** will be set to `hello.c`
 
 Input files which may be optionally supplied for a test.
 
+**`supplied_files`** = \[\]
+
+
+Helper files which may be supplied for a test.  
+**NOTE: All helper files copied in via `supplied_files_directory` must still be declared here or they won't be linked into each test's containerised directory**
+
 ### Parameters specifying actions performed prior to test
 
 **`check_hash_bang_line`** = True
@@ -705,7 +711,7 @@ This is done by setting several environment variables for the test
 
 
 Files tested and the output of the tests are uploaded to this URL using a POST request.  
-No more than **`upload_max_bytes`** will be uploaded.
+No more than **`upload_max_bytes`** will be uploaded with the test output log not included in this number.
 Any field/values specified in  **`upload_max_bytes`** will be included in the POST request.
 In addition 'exercise', 'hostname' and 'login' fields are included in the POST request.  
 A zip archive containing the files tested is passed as the field **`zip`**.  

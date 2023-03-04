@@ -43,3 +43,18 @@ def atexit_exc_decorator(func, debug):
             if debug:
                 traceback.print_exc(file=sys.stderr)
     return wrapper
+
+
+# plagiarised Tee code from old autotest (deal with it)
+class Tee:
+    def __init__(self, stream):
+        self.stream = stream
+        self.fileno = stream.fileno
+
+    def flush(self):
+        sys.stdout.flush()
+        self.stream.flush()
+
+    def write(self, message):
+        sys.stdout.write(message)
+        self.stream.write(message)

@@ -215,6 +215,16 @@ PARAMETER_LIST += [
             Input files which may be optionally supplied for a test.
         """,
     ),
+    Parameter(
+        "supplied_files",
+        default=[],
+        finalize=finalize_list_of_strings,
+        required_type=list,
+        description="""
+            Helper files which may be supplied for a test.<br>
+            **NOTE: All helper files copied in via `supplied_files_directory` must still be declared here or they won't be linked into each test's containerised directory**
+        """,
+    ),
     "### Parameters specifying actions performed prior to test",
     Parameter(
         "check_hash_bang_line",
@@ -1186,7 +1196,7 @@ PARAMETER_LIST += [
         default="",
         description="""
             Files tested and the output of the tests are uploaded to this URL using a POST request.<br>
-            No more than **`upload_max_bytes`** will be uploaded.
+            No more than **`upload_max_bytes`** will be uploaded with the test output log not included in this number.
             Any field/values specified in  **`upload_max_bytes`** will be included in the POST request.
             In addition 'exercise', 'hostname' and 'login' fields are included in the POST request.<br>
             A zip archive containing the files tested is passed as the field **`zip`**.<br>

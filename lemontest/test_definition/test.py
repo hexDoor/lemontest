@@ -27,6 +27,7 @@ class Test(AbstractTest):
     compile_commands = None
     files = None
     optional_files = None
+    supplied_files = None
     expected_stdout = None
     expected_stderr = None
     label = None
@@ -72,6 +73,7 @@ class Test(AbstractTest):
         self.compile_commands = parameters["compile_commands"]
         self.files = parameters["files"]
         self.optional_files = parameters["optional_files"]
+        self.supplied_files = parameters["supplied_files"]
         self.expected_stdout = parameters["expected_stdout"]
         self.expected_stderr = parameters["expected_stderr"]
         self.label = parameters["label"]
@@ -444,7 +446,7 @@ class Test(AbstractTest):
 
     def link_submission_files(self, file_dir: Path):
         # link submission files
-        submission_files = self.files + self.optional_files
+        submission_files = self.files + self.optional_files + self.supplied_files
         # FIXME: Try to get this section put into a function
         for file in submission_files:
             file_path = file_dir.joinpath(file).resolve()

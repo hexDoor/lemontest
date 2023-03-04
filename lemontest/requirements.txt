@@ -1,3 +1,4 @@
 tqdm
 termcolor
 uuid
+requests

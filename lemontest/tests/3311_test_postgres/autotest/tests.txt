@@ -1,7 +1,7 @@
 max_cpu=10
 files=test.sql
 worker_count=3
-optional_files=["./sql_tester"]
+supplied_files=["./sql_tester"]
 worker_read_only_mount=["/localstorage/cs3311/postgresql_cluster/pgsql/bin/"]
 worker_isolate_network=false
 
@@ -9,7 +9,6 @@ worker_isolate_network=false
 # This test assumes that there is currently a postgres server running on localhost:5432
 # Also assumes that there is a database with name of env $USER and $USER owns the public schema on the db
 # Does not currently support LDAP password forwarding in it's current form (being done soon)
-# Needs a little revamp with regards to optional_files parameter but we'll handle that a little bit later (have an idea)
 
 # provide LDAP password to env variable
 global_user_protected_environment_vars=["PGPASSWORD"]
