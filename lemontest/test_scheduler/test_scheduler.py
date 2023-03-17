@@ -108,7 +108,7 @@ class TestScheduler(AbstractScheduler):
         pass_count = 0
         fail_count = 0
         count = 0
-        pbar = tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test")
+        pbar = tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test", disable=None)
         for res in pbar:
             if res.passed():
                 pass_count += 1
