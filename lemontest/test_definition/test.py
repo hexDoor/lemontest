@@ -34,6 +34,7 @@ class Test(AbstractTest):
     parameters = None
     program = None
     stdin = None
+    generate_output = None
 
     # runtime
     colored = None
@@ -80,6 +81,9 @@ class Test(AbstractTest):
         self.parameters = parameters
         self.program = parameters["program"]
         self.stdin = parameters["stdin"]
+        # not added during test so injected
+        self.parameters["generate_output"] = False
+        self.generate_output = self.parameters["generate_output"]
 
         self.colored = (
             termcolor_colored if parameters["colorize_output"] else lambda_function
@@ -110,6 +114,9 @@ class Test(AbstractTest):
     # preprocess is a critical section
     # ensure this via a mutex lock
     def preprocess(self, file_dir: Path):
+        # reinject parameter
+        self.generate_output = self.parameters["generate_output"]
+
         # preprocess fail reasons
         not_run_description = self.colored("could not be run")
 
@@ -252,6 +259,11 @@ class Test(AbstractTest):
             self.stderr = codecs.decode(stderr, "UTF-8", errors="replace")
         else:
             self.stderr = stderr
+
+        # early exit with pass if only generating output
+        if self.generate_output:
+            self.test_passed = True
+            return
 
         # checks for any issues in stdout or stderr and/or files
         self.process_short_explanation()

@@ -99,6 +99,12 @@ class TestScheduler(AbstractScheduler):
         # run any overarching support setup commands here
         self.global_setup_command()
 
+        # generate expected output if set
+        for test in tests:
+            test.set_param("generate_output", True if self.args.generate_expected_output != "no" else False)
+            # override any checkers, so expected output can be generated from solutions with non-permitted features
+            test.set_param("checkers", [])
+
         # process tests to be run
         tests = [(test, self.shared_dir, self.parameters) for test in tests]
 
