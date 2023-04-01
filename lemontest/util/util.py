@@ -38,7 +38,7 @@ def atexit_exc_decorator(func, debug):
             etype, evalue, _etraceback = sys.exc_info()
             eformatted = "\n".join(traceback.format_exception_only(etype, evalue))
 
-            print(f"atexit: internal error: {eformatted}", file=sys.stderr)
+            print(f"Error encountered when exiting:", f"{evalue}", sep='\n\n', file=sys.stderr)
 
             if debug:
                 traceback.print_exc(file=sys.stderr)

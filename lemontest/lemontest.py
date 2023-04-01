@@ -53,7 +53,7 @@ def main():
         etype, evalue, _etraceback = sys.exc_info()
         eformatted = "\n".join(traceback.format_exception_only(etype, evalue))
 
-        print(f"{name}: internal error: {eformatted}", file=sys.stderr)
+        print(f"Error encountered while running autotests:", f"{evalue}", sep='\n\n', file=sys.stderr)
 
         if debug:
             traceback.print_exc(file=sys.stderr)
