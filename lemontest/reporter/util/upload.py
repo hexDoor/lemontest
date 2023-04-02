@@ -35,7 +35,7 @@ def zip_files_for_upload(stream, tests, parameters, args, log_stream):
     # use of with triggered a bug here - in old python versions
     zf = zipfile.ZipFile(stream, "w", compression=zipfile.ZIP_LZMA)
     bytes_uploaded = 0
-    for test in tests.values():
+    for test in tests:
         try:
             zf.writestr(test.label + ".passed", "1" if test.passed else "")
         except AttributeError:
@@ -48,7 +48,7 @@ def zip_files_for_upload(stream, tests, parameters, args, log_stream):
     # log stream is always uploaded no matter what
     log_size = log_stream.tell()
     log_stream.seek(0)
-    zf.writestr(log_stream.read())
+    zf.writestr("autotest.log", log_stream.read())
     # upload files
     for filename in list(upload_files):
         try:

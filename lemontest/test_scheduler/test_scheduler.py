@@ -169,7 +169,7 @@ class TestScheduler(AbstractScheduler):
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
             )
-            if not retcode:
+            if retcode != 0:
                 explanation = stdout.getvalue() + "\n" + stderr.getvalue()
                 stdout.close()
                 stderr.close()
@@ -177,6 +177,7 @@ class TestScheduler(AbstractScheduler):
                     self.abort_global_cleanup = True
                 die(explanation)
             if self.debug:
+                print(f"return code: {retcode}")
                 print(stdout.getvalue())
                 print(stderr.getvalue())
             stdout.close()
@@ -206,6 +207,7 @@ class TestScheduler(AbstractScheduler):
                 stderr.close()
                 die(explanation)
             if self.debug:
+                print(f"return code: {retcode}")
                 print(stdout.getvalue())
                 print(stderr.getvalue())
             stdout.close()

@@ -58,3 +58,9 @@ class Tee:
     def write(self, message):
         sys.stdout.write(message)
         self.stream.write(message)
+
+    def getStream(self):
+        return self.stream
+
+    def close(self):
+        self.stream.close()

@@ -73,7 +73,7 @@ class Reporter(AbstractReporter):
             print(f"{pass_str} {fail_str}", file=self.log)
 
         if self.upload_url:
-            upload_results_http(tests, self.parameters, self.args, self.log)
+            upload_results_http(tests, self.parameters, self.args, self.log.getStream())
 
     def generate_expected_output(self, tests: List[AbstractTest], args: Namespace) -> None:
         """
