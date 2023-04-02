@@ -361,7 +361,7 @@ class Test(AbstractTest):
                 retcode = run_support_command(
                     checker,
                     stdout=stdout,
-                    stderr=stderr,
+                    stderr=stdout,
                     arguments=[filename],
                     debug=self.debug
                 )
@@ -370,6 +370,9 @@ class Test(AbstractTest):
                     stdout.close()
                     stderr.close()
                     return False
+                if self.debug:
+                    print(f"checker: '{checker}' on file '{filename}' return code: {retcode}")
+                    print(stdout.getvalue())
                 stdout.close()
                 stderr.close()
 
@@ -380,7 +383,7 @@ class Test(AbstractTest):
             retcode = run_support_command(
                 pre_compile_command,
                 stdout=stdout,
-                stderr=stderr,
+                stderr=stdout,
                 debug=self.debug
             )
             if retcode != 0:
@@ -388,6 +391,9 @@ class Test(AbstractTest):
                 stdout.close()
                 stderr.close()
                 return False
+            if self.debug:
+                print(f"pre_compile_command: '{pre_compile_command}' return code: {retcode}")
+                print(stdout.getvalue())
             stdout.close()
             stderr.close()
 
@@ -423,7 +429,7 @@ class Test(AbstractTest):
                 arguments=arguments,
                 unlink=program,
                 stdout=stdout,
-                stderr=stderr,
+                stderr=stdout,
                 debug=self.debug
             )
             if retcode != 0:
@@ -431,6 +437,9 @@ class Test(AbstractTest):
                 stdout.close()
                 stderr.close()
                 return False
+            if self.debug:
+                print(f"compile_command: '{compile_command}' return code: {retcode}")
+                print(stdout.getvalue())
             stdout.close()
             stderr.close()
 
@@ -520,7 +529,7 @@ class Test(AbstractTest):
             retcode = run_support_command(
                 setup_command,
                 stdout=stdout,
-                stderr=stderr,
+                stderr=stdout,
                 debug=self.debug
             )
             if retcode != 0:
@@ -528,6 +537,9 @@ class Test(AbstractTest):
                 stdout.close()
                 stderr.close()
                 return False
+            if self.debug:
+                print(f"setup_command: '{setup_command}' return code: {retcode}")
+                print(stdout.getvalue())
             stdout.close()
             stderr.close()
 

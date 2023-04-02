@@ -161,27 +161,23 @@ class TestScheduler(AbstractScheduler):
         env = self.parameters["environment"]
         if global_setup_command:
             stdout = io.StringIO()
-            stderr = io.StringIO()
             retcode = run_support_command(
                 global_setup_command,
                 stdout=stdout,
-                stderr=stderr,
+                stderr=stdout,
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
             )
             if retcode != 0:
-                explanation = stdout.getvalue() + "\n" + stderr.getvalue()
+                explanation = stdout.getvalue()
                 stdout.close()
-                stderr.close()
                 if retcode != 1:
                     self.abort_global_cleanup = True
                 die(explanation)
             if self.debug:
-                print(f"return code: {retcode}")
+                print(f"global_setup_command: '{global_setup_command}' return code: {retcode}")
                 print(stdout.getvalue())
-                print(stderr.getvalue())
             stdout.close()
-            stderr.close()
         os.chdir(orig_dir)
 
     def global_clean_command(self):
@@ -193,25 +189,21 @@ class TestScheduler(AbstractScheduler):
         env = self.parameters["environment"]
         if global_clean_command:
             stdout = io.StringIO()
-            stderr = io.StringIO()
             retcode = run_support_command(
                 global_clean_command,
                 stdout=stdout,
-                stderr=stderr,
+                stderr=stdout,
                 debug=self.debug,
                 environ=env if env != os.environ else os.environ
             )
             if retcode != 0:
-                explanation = stdout.getvalue() + "\n" + stderr.getvalue()
+                explanation = stdout.getvalue()
                 stdout.close()
-                stderr.close()
                 die(explanation)
             if self.debug:
-                print(f"return code: {retcode}")
+                print(f"global_clean_command: '{global_clean_command}' return code: {retcode}")
                 print(stdout.getvalue())
-                print(stderr.getvalue())
             stdout.close()
-            stderr.close()
         os.chdir(orig_dir)
 
     def global_user_environment_vars(self):
