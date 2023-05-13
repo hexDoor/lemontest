@@ -23,6 +23,8 @@ import atexit
 import os
 import io
 import getpass
+import sys
+import signal
 
 """
 import logging
@@ -60,6 +62,8 @@ class TestScheduler(AbstractScheduler):
             # cleanup worker pool at exit (fixes issue with lemontest exiting without fully terminating processes)
             # this function is run during atexit so having a decorator to catch any exceptions will format accordingly
             atexit.register(atexit_exc_decorator(self.cleanup, self.debug))
+            # catch any interrupt signals as a request to exit immediately
+            signal.signal(signal.SIGINT, lambda signum, frame: sys.exit(0))
         except Exception as err:
             die(err)
 
