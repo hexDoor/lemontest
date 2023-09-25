@@ -57,13 +57,13 @@ class TestScheduler(AbstractScheduler):
             set_start_method('fork')
             # spawn Lock for test preprocessing shared directory access
             pLock = Lock()
-            # spawn worker pool
-            self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
+            # catch any interrupt signals as a request to exit immediately
+            signal.signal(signal.SIGINT, lambda signum, frame: sys.exit(0))
             # cleanup worker pool at exit (fixes issue with lemontest exiting without fully terminating processes)
             # this function is run during atexit so having a decorator to catch any exceptions will format accordingly
             atexit.register(atexit_exc_decorator(self.cleanup, self.debug))
-            # catch any interrupt signals as a request to exit immediately
-            signal.signal(signal.SIGINT, lambda signum, frame: sys.exit(0))
+            # spawn worker pool
+            self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
         except Exception as err:
             die(err)
 
