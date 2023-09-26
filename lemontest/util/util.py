@@ -4,6 +4,8 @@
 import sys
 import traceback
 
+SIGINT_MESSAGE = "User sent SIGINT. Please try to let your autotest process complete rather than trying to force quit it."
+
 
 class AutotestException(Exception):
     pass

@@ -42,10 +42,6 @@ def main():
     debug = os.environ.get("AUTOTEST_DEBUG", 0)
     name = re.sub(r"\.py$", "", os.path.basename(sys.argv[0]))
 
-    # load interrupt handler 
-    # how do we approach this with multiprocessing pools? (possibly a seperate interrupt handler to kill resources?)
-    # probably not necessary (just let it die by itself hahaaa)
-
     # execute autotests
     try:
         sys.exit(execute_autotest())

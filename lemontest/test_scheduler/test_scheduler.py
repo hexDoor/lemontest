@@ -1,7 +1,7 @@
 from classes.test_scheduler import AbstractScheduler
 from classes.test import AbstractTest
 from test_worker.test_worker import TestWorker
-from util.util import die, lambda_function, atexit_exc_decorator
+from util.util import die, lambda_function, atexit_exc_decorator, SIGINT_MESSAGE
 from util.fs import copy_files_to_directory
 from util.subprocess import run_support_command
 
@@ -11,9 +11,10 @@ from typing import Dict, Any, List
 
 # apply pool patch
 import util.istarmap
-from multiprocessing import set_start_method, Pool, Lock, log_to_stderr, SUBDEBUG
+from multiprocessing import Lock, set_start_method, get_context
 from termcolor import colored as termcolor_colored
 from pathlib import Path
+from contextlib import contextmanager
 
 import tqdm
 import glob
@@ -23,8 +24,8 @@ import atexit
 import os
 import io
 import getpass
-import sys
 import signal
+import sys
 
 """
 import logging
@@ -37,7 +38,6 @@ class TestScheduler(AbstractScheduler):
     parameters = None
     debug = False
     shared_dir = None
-    worker_pool = None
     cleanup_run = False # need this to prevent cleanup running twice
     abort_global_cleanup = False
 
@@ -53,17 +53,11 @@ class TestScheduler(AbstractScheduler):
             else lambda_function
         )
         try:
-            # set the fork start method
-            set_start_method('fork')
-            # spawn Lock for test preprocessing shared directory access
-            pLock = Lock()
-            # catch any interrupt signals as a request to exit immediately
-            signal.signal(signal.SIGINT, lambda signum, frame: sys.exit(0))
+            # catch any interrupt signals as a KeyboardInterrupt exception
+            signal.signal(signal.SIGINT, scheduler_handler)
             # cleanup worker pool at exit (fixes issue with lemontest exiting without fully terminating processes)
             # this function is run during atexit so having a decorator to catch any exceptions will format accordingly
             atexit.register(atexit_exc_decorator(self.cleanup, self.debug))
-            # spawn worker pool
-            self.worker_pool = Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1)
         except Exception as err:
             die(err)
 
@@ -118,27 +112,35 @@ class TestScheduler(AbstractScheduler):
         pass_count = 0
         fail_count = 0
         count = 0
-        pbar = tqdm.tqdm(self.worker_pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test", disable=None)
-        for res in pbar:
-            if res.passed():
-                pass_count += 1
+
+        try:
+            # set the fork start method
+            set_start_method("forkserver")
+            # spawn Lock for test preprocessing shared directory access
+            pLock = Lock()
+            with get_context("forkserver").Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1) as pool:
+                pbar = tqdm.tqdm(pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test", disable=None)
+                for res in pbar:
+                    if res.passed():
+                        pass_count += 1
+                    else:
+                        fail_count += 1
+                    total_desc = f"Running {len(tests)} tests"
+                    pass_desc = self.colored(f"{pass_count} tests passed", "green")
+                    fail_desc = self.colored(f"{fail_count} tests failed", "red")
+                    pbar.set_description(f"{total_desc} | {pass_desc} | {fail_desc}")
+                    test_res.append(res)
+                    count += 1
+                    if count == len(tests):
+                        pbar.set_description(f"Ran {len(tests)} tests | {pass_desc} | {fail_desc}")
+        except KeyboardInterrupt:
+            die(SIGINT_MESSAGE)
+        except Exception as e:
+            if self.debug:
+                raise e
             else:
-                fail_count += 1
-            total_desc = f"Running {len(tests)} tests"
-            pass_desc = self.colored(f"{pass_count} tests passed", "green")
-            fail_desc = self.colored(f"{fail_count} tests failed", "red")
-            pbar.set_description(f"{total_desc} | {pass_desc} | {fail_desc}")
-            test_res.append(res)
-            count += 1
-            if count == len(tests):
-                pbar.set_description(f"Ran {len(tests)} tests | {pass_desc} | {fail_desc}")
+                die("There was an internal error with lemontest (unless you pressed ctrl+c or tried to kill autotest) but the error has been suppressed unless debug mode is enabled.")
 
-        # terminate worker pool as work is done
-        self.worker_pool.terminate()
-        self.worker_pool.join() # this doesn't sometimes work with .close() so just terminate
-
-        # reset worker_pool in case cleanup gets triggered by signal
-        self.worker_pool = None
 
         # return results
         return test_res
@@ -147,9 +149,6 @@ class TestScheduler(AbstractScheduler):
         # early exit if cleanup run
         if self.cleanup_run:
             return
-        if self.worker_pool:
-            self.worker_pool.terminate() # send SIGTERM to worker processes
-            self.worker_pool.join()
         # run overarching cleanup support command
         # unless aborted
         if not self.abort_global_cleanup:
@@ -249,6 +248,25 @@ class TestScheduler(AbstractScheduler):
             self.parameters["environment"] = environment
         return change_flag
 
+def scheduler_handler(signum, frame):
+    raise KeyboardInterrupt(SIGINT_MESSAGE)
+
+
+@contextmanager
+def disable_exception_traceback():
+    """
+    All traceback information is suppressed and only the exception type and value are printed
+    """
+    default_value = getattr(sys, "tracebacklimit", 1000)  # `1000` is a Python's default value
+    sys.tracebacklimit = 0
+    yield
+    sys.tracebacklimit = default_value  # revert changes
+
+
+def test_worker_handler(signum, frame):
+    with disable_exception_traceback():
+        raise KeyboardInterrupt(SIGINT_MESSAGE) from None
+
 
 # setup a global variable to inherit a global lock for the test preprocessing
 # see: test_worker to see why this is absolutely necessary
@@ -257,6 +275,7 @@ class TestScheduler(AbstractScheduler):
 def test_worker_init(lock: Lock) -> None:
     global pLock
     pLock = lock
+    signal.signal(signal.SIGINT, test_worker_handler)
 
 
 # initalise worker and execute task
