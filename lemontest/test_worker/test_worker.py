@@ -7,7 +7,7 @@ from multiprocessing import Lock
 
 import tempfile
 import shutil
-import atexit
+#import atexit # atexit is not honoured when running this as fork or forkserver
 
 from .sandbox.sandbox import Sandbox, SHARED_DIR_DEST
 
@@ -22,8 +22,7 @@ class TestWorker(AbstractWorker):
     def __init__(self, shared_dir: Path, **parameters):
         self.shared_dir = shared_dir
         self.parameters = parameters
-        self.worker_root = Path(tempfile.mkdtemp())
-        atexit.register(lambda: shutil.rmtree(self.worker_root))
+        self.worker_root = "not yet allocated"
         self.debug = parameters["debug"]
         self.colored = (
             termcolor_colored
@@ -48,24 +47,31 @@ class TestWorker(AbstractWorker):
         # rw bind in the scheduler temp directory (should allow caching between worker processes but must use lock)
         # available within Sandbox as "/shared" 
         # spawn sandbox runtime context
-        with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
-            # run test preprocessing
-            pLock.acquire()
-            pStatus = test.preprocess(SHARED_DIR_DEST)
-            pLock.release()
-            if not pStatus:
-                return test
+        try:
+            # worker root is created at this point as atexit is not honoured with multiprocessing fork/forkserver
+            # as a result, a try/finally block is required to properly clean up (rather than setup, cleanup functions)
+            self.worker_root = Path(tempfile.mkdtemp())
+            with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
 
-            # execute test
-            rStatus = test.run_test(SHARED_DIR_DEST)
-            if not rStatus:
-                return test
+                # run test preprocessing
+                pLock.acquire()
+                pStatus = test.preprocess(SHARED_DIR_DEST)
+                pLock.release()
+                if not pStatus:
+                    return test
 
-            # perform test postprocessing (output checking etc.)
-            test.postprocess()
+                # execute test
+                rStatus = test.run_test(SHARED_DIR_DEST)
+                if not rStatus:
+                    return test
 
-        # return processed test
-        return test
+                # perform test postprocessing (output checking etc.)
+                test.postprocess()
+
+            # return processed test
+            return test
+        finally:
+            shutil.rmtree(self.worker_root)
 
     def cleanup(self):
         pass
