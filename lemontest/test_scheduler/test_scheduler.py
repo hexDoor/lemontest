@@ -268,6 +268,11 @@ def test_worker_handler(signum, frame):
         raise KeyboardInterrupt(SIGINT_MESSAGE) from None
 
 
+def test_worker_self_terminate(signum, frame):
+    print(f"I am possibly a Zombie process (pid: {os.getpid()}) as I've existed for 24 hours. I am going to self terminate now.")
+    sys.exit(1)
+
+
 # setup a global variable to inherit a global lock for the test preprocessing
 # see: test_worker to see why this is absolutely necessary
 # we can't use multiprocessing.Manager because that will break if we
@@ -276,6 +281,9 @@ def test_worker_init(lock: Lock) -> None:
     global pLock
     pLock = lock
     signal.signal(signal.SIGINT, test_worker_handler)
+    # automatically close myself if running for over a day (sometimes seems to happen on big servers)
+    signal.signal(signal.SIGALRM, test_worker_self_terminate)
+    signal.alarm(86400)
 
 
 # initalise worker and execute task
