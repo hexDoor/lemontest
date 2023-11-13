@@ -110,3 +110,10 @@ class AbstractTest:
 
         Returns: Union[str, None]
         """
+
+    def mark_timeout(self):
+        """
+        Mark test failure description as aborted due to timeout
+
+        Returns: None
+        """

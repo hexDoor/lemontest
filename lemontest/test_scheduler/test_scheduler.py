@@ -269,8 +269,7 @@ def test_worker_handler(signum, frame):
 
 
 def test_worker_self_terminate(signum, frame):
-    print(f"I am possibly a Zombie process (pid: {os.getpid()}) as I've existed for 24 hours. I am going to self terminate now.")
-    sys.exit(1)
+    raise TimeoutError()
 
 
 # setup a global variable to inherit a global lock for the test preprocessing
@@ -288,11 +287,18 @@ def test_worker_init(lock: Lock) -> None:
 
 # initalise worker and execute task
 def test_worker(test: AbstractTest, shared_dir: Path, parameters) -> AbstractTest:
-    worker = TestWorker(shared_dir, **parameters)
-    worker.setup()
-    res = worker.execute(test, pLock) #pLock available from Pool initializer (global var)
-    worker.cleanup()
-    return res
+    try:
+        worker = TestWorker(shared_dir, **parameters)
+        worker.setup()
+        res = worker.execute(test, pLock) #pLock available from Pool initializer (global var)
+        # I need this signal alarm here to trigger self terminate post sandbox (as I can't go back to original namespace with rootless container)
+        signal.alarm(86400)
+        worker.cleanup()
+        return res
+    except TimeoutError:
+        print(f"I am possibly a Zombie process (pid: {os.getpid()}) as I've existed for 24 hours running Test {test.label}. I am going to self terminate now.")
+        test.mark_timeout()
+        return test
 
 
 if __name__ == '__main__':

@@ -320,6 +320,10 @@ class Test(AbstractTest):
 
     def run_successful(self):
         return self.test_ran
+    
+    def mark_timeout(self):
+        self.short_explanation = "process timeout (24h) - test aborted"
+        self.test_passed = False
 
     def explanation(self, previous_errors: Dict[str, Any]):
         # If test has passed, refer to __str__ function
