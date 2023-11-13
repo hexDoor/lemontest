@@ -7,6 +7,7 @@ from multiprocessing import Lock
 
 import tempfile
 import shutil
+import signal
 #import atexit # atexit is not honoured when running this as fork or forkserver
 
 from .sandbox.sandbox import Sandbox, SHARED_DIR_DEST
@@ -52,6 +53,8 @@ class TestWorker(AbstractWorker):
             # as a result, a try/finally block is required to properly clean up (rather than setup, cleanup functions)
             self.worker_root = Path(tempfile.mkdtemp())
             with Sandbox(self.worker_root, self.shared_dir, **self.parameters) as sb:
+                # I need this signal alarm here to trigger self terminate post sandbox (as I can't go back to original namespace with rootless container)
+                signal.alarm(86400)
 
                 # run test preprocessing
                 pLock.acquire()

@@ -291,8 +291,6 @@ def test_worker(test: AbstractTest, shared_dir: Path, parameters) -> AbstractTes
         worker = TestWorker(shared_dir, **parameters)
         worker.setup()
         res = worker.execute(test, pLock) #pLock available from Pool initializer (global var)
-        # I need this signal alarm here to trigger self terminate post sandbox (as I can't go back to original namespace with rootless container)
-        signal.alarm(86400)
         worker.cleanup()
         return res
     except TimeoutError:
