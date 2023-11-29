@@ -115,10 +115,10 @@ class TestScheduler(AbstractScheduler):
 
         try:
             # set the fork start method
-            set_start_method("forkserver")
+            set_start_method("fork")
             # spawn Lock for test preprocessing shared directory access
             pLock = Lock()
-            with get_context("forkserver").Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1) as pool:
+            with get_context("fork").Pool(initializer=test_worker_init, initargs=(pLock,), processes=self.parameters["worker_count"], maxtasksperchild=1) as pool:
                 pbar = tqdm.tqdm(pool.istarmap(test_worker, tests, chunksize=1), total=len(tests), unit=" test", disable=None)
                 for res in pbar:
                     if res.passed():
